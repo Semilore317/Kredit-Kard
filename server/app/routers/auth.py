@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
 
 from app.database import get_db
 from app.config import get_settings
@@ -10,15 +9,16 @@ from app.models.trader import Trader
 from app.schemas.auth import TraderRegister, TraderLogin, TokenResponse, TraderOut
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_pin(pin: str) -> str:
-    return pwd_context.hash(pin)
+    # bcrypt requires bytes, returns bytes. we store as string in db.
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pin.encode('utf-8'), salt).decode('utf-8')
 
 
 def verify_pin(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('utf-8'))
 
 
 def create_access_token(trader_id: int) -> str:

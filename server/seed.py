@@ -11,11 +11,12 @@ from passlib.context import CryptContext
 from app.database import SessionLocal, engine
 from app.models import Base, Trader, Customer, Debt
 from app.models.debt import DebtStatus
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
 Base.metadata.create_all(bind=engine)
 
+def get_hash(pin: str) -> str:
+    return bcrypt.hashpw(pin.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 def seed():
     db = SessionLocal()
@@ -30,13 +31,13 @@ def seed():
                 name="Mama Titi",
                 phone="08012345678",
                 business_name="Mama Titi's Store",
-                pin_hash=pwd_context.hash("1234"),
+                pin_hash=get_hash("1234"),
             ),
             Trader(
                 name="Alhaji Bello",
                 phone="08098765432",
                 business_name="Bello Agro",
-                pin_hash=pwd_context.hash("5678"),
+                pin_hash=get_hash("5678"),
             ),
         ]
         db.add_all(traders)
