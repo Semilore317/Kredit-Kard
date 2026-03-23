@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  /*primary color palette*/
+  --color-brand-primary-50: #fff4f0;
+  --color-brand-primary-100: #ffe6dd;
+  --color-brand-primary-200: #ffcdbb;
+  --color-brand-primary-300: #ffaa8d;
+  --color-brand-primary-400: #ff7b52;
+  --color-brand-primary-500: #fe571b; 
+  --color-brand-primary-600: #e5410d;
+  --color-brand-primary-700: #bf320d;
+  --color-brand-primary-800: #982a11;
+  --color-brand-primary-900: #7b2512;
+  --color-brand-primary-950: #431007;
+
+    /* Success Colors (Green) */
+  --color-brand-success-50: #f0fdf4;
+  --color-brand-success-100: #dcfce7;
+  --color-brand-success-200: #bbf7d0;
+  --color-brand-success-300: #86efac;
+  --color-brand-success-400: #4ade80;
+  --color-brand-success-500: #22c55e;
+  --color-brand-success-600: #16a34a;
+  --color-brand-success-700: #15803d;
+  --color-brand-success-800: #166534;
+  --color-brand-success-900: #14532d;
+  --color-brand-success-950: #052e16;
+
+  /* Error Colors (Red) */
+  --color-brand-error-50: #fef2f2;
+  --color-brand-error-100: #fee2e2;
+  --color-brand-error-200: #fecaca;
+  --color-brand-error-300: #fca5a5;
+  --color-brand-error-400: #f87171;
+  --color-brand-error-500: #ef4444;
+  --color-brand-error-600: #dc2626;
+  --color-brand-error-700: #b91c1c;
+  --color-brand-error-800: #991b1b;
+  --color-brand-error-900: #7f1d1d;
+  --color-brand-error-950: #450a0a;
+
+  /*Fonts*/
+  --font-base: 'Inter', sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  
+}
+
+html, body {
+  font-family: var(--font-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6,button, input, select, textarea{
+  font-family: inherit;
+}
