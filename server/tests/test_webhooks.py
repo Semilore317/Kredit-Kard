@@ -10,7 +10,15 @@ def _generate_signature(payload_bytes: bytes, secret: str) -> str:
         hashlib.sha512,
     ).hexdigest()
 
-def test_interswitch_webhook_valid_signature(client):
+from unittest.mock import patch
+
+@patch("app.routers.debts.create_virtual_account")
+def test_interswitch_webhook_valid_signature(mock_create_virtual_account, client):
+    mock_create_virtual_account.return_value = {
+        "virtual_account_no": "9090000000",
+        "ussd_string": "*322*909#",
+        "payment_ref": "KK-WEBHOOK"
+    }
     # 1. Setup a debt directly (we mock the DB creation without auth just to test webhook)
     # Easiest way is to create via /debts using an auth header fixture but let's just create raw
     

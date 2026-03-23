@@ -23,7 +23,16 @@ def auth_headers(client):
     return {"Authorization": f"Bearer {token}"}
 
 
-def test_create_debt(client, auth_headers):
+from unittest.mock import patch
+
+@patch("app.routers.debts.create_virtual_account")
+def test_create_debt(mock_create_virtual_account, client, auth_headers):
+    mock_create_virtual_account.return_value = {
+        "virtual_account_no": "9091234567",
+        "ussd_string": "*322*9091234567*500000#",
+        "payment_ref": "KK-TESTREF"
+    }
+
     response = client.post(
         "/debts",
         headers=auth_headers,
@@ -39,11 +48,19 @@ def test_create_debt(client, auth_headers):
     assert data["amount"] == 5000
     assert data["status"] == "PENDING"
     assert "payment_ref" in data
-    assert "virtual_account_no" in data
+    assert data["virtual_account_no"] == "9091234567"
     assert "ussd_string" in data
+    mock_create_virtual_account.assert_called_once()
 
 
-def test_list_debts(client, auth_headers):
+@patch("app.routers.debts.create_virtual_account")
+def test_list_debts(mock_create_virtual_account, client, auth_headers):
+    mock_create_virtual_account.return_value = {
+        "virtual_account_no": "9091234567",
+        "ussd_string": "*322*9091234567*500000#",
+        "payment_ref": "KK-TESTREF"
+    }
+
     # Create two debts
     client.post(
         "/debts",
