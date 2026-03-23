@@ -1,0 +1,68 @@
+import httpx
+from app.config import get_settings
+
+settings = get_settings()
+
+
+def _format_phone(phone: str) -> str:
+    """Normalise phone to international format (234XXXXXXXXXX)."""
+    phone = phone.strip().replace(" ", "")
+    if phone.startswith("0"):
+        phone = "234" + phone[1:]
+    elif phone.startswith("+"):
+        phone = phone[1:]
+    return phone
+
+
+def send_debt_notification(
+    customer_phone: str,
+    customer_name: str,
+    trader_business_name: str,
+    amount: float,
+    ussd_string: str,
+    virtual_account_no: str,
+) -> bool:
+    """Send SMS to customer when a debt is logged."""
+    message = (
+        f"Hello {customer_name}, you owe {trader_business_name} "
+        f"N{amount:,.0f}.\n"
+        f"Pay now: Dial {ussd_string} OR transfer to {virtual_account_no} (GTBank).\n"
+        f"Powered by KreditKard."
+    )
+    return _send(customer_phone, message)
+
+
+def send_payment_confirmation(
+    trader_phone: str,
+    customer_name: str,
+    amount: float,
+) -> bool:
+    """Notify the trader that a customer has paid."""
+    message = (
+        f"Payment received! {customer_name} just paid N{amount:,.0f}. "
+        f"Your KreditKard ledger has been updated."
+    )
+    return _send(trader_phone, message)
+
+
+def _send(phone: str, message: str) -> bool:
+    """Internal — POST to Termii send API."""
+    try:
+        payload = {
+            "to": _format_phone(phone),
+            "from": settings.termii_sender_id,
+            "sms": message,
+            "type": "plain",
+            "channel": "generic",
+            "api_key": settings.termii_api_key,
+        }
+        response = httpx.post(
+            f"{settings.termii_base_url}/api/sms/send",
+            json=payload,
+            timeout=8.0,
+        )
+        return response.status_code == 200
+    except Exception:
+        # Log but don't crash — SMS failure must not block debt creation
+        print(f"[SMS] Failed to send to {phone}")
+        return False
