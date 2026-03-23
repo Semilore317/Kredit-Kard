@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: kreditkard_user
+      POSTGRES_PASSWORD: kreditkard_pass
+      POSTGRES_DB: kreditkard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kreditkard_user -d kreditkard"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: 
+      context: ./server
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./server/.env
+    environment:
+      # Override the localhost DB url from .env to use the internal docker compose network
+      - DATABASE_URL=postgresql://kreditkard_user:kreditkard_pass@db:5432/kreditkard
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
