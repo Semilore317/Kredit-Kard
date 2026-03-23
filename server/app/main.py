@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import auth, debts, customers, webhooks
+from app.routers import auth, debts, customers, webhooks, demo
 
 settings = get_settings()
 
@@ -27,6 +27,10 @@ app.include_router(auth.router)
 app.include_router(debts.router)
 app.include_router(customers.router)
 app.include_router(webhooks.router)
+
+# Only mount the demo router in non-production environments
+if settings.environment.lower() != "production":
+    app.include_router(demo.router)
 
 
 @app.get("/health", tags=["Health"])
