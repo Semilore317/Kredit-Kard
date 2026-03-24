@@ -25,7 +25,7 @@ def auth_headers(client):
 
 from unittest.mock import patch
 
-@patch("app.routers.debts.create_virtual_account")
+@patch("app.routers.debts._create_virtual_account")
 def test_create_debt(mock_create_virtual_account, client, auth_headers):
     mock_create_virtual_account.return_value = {
         "virtual_account_no": "9091234567",
@@ -53,7 +53,7 @@ def test_create_debt(mock_create_virtual_account, client, auth_headers):
     mock_create_virtual_account.assert_called_once()
 
 
-@patch("app.routers.debts.create_virtual_account")
+@patch("app.routers.debts._create_virtual_account")
 def test_list_debts(mock_create_virtual_account, client, auth_headers):
     mock_create_virtual_account.return_value = {
         "virtual_account_no": "9091234567",

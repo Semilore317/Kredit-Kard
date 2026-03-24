@@ -12,7 +12,7 @@ def _generate_signature(payload_bytes: bytes, secret: str) -> str:
 
 from unittest.mock import patch
 
-@patch("app.routers.debts.create_virtual_account")
+@patch("app.routers.debts._create_virtual_account")
 def test_interswitch_webhook_valid_signature(mock_create_virtual_account, client):
     mock_create_virtual_account.return_value = {
         "virtual_account_no": "9090000000",
