@@ -10,10 +10,21 @@ from app.models.trader import Trader
 from app.models.customer import Customer
 from app.models.debt import Debt, DebtStatus
 from app.schemas.debt import DebtCreate, DebtOut, DebtListOut
-from app.services.interswitch import create_virtual_account
+
+from app.config import get_settings
+from app.services.interswitch import create_virtual_account as _live_create_va
+from app.services.mock_payment import create_virtual_account as _mock_create_va
 from app.services import sms
 
 router = APIRouter(prefix="/debts", tags=["Debts"])
+
+
+def _create_virtual_account(payment_ref: str, amount: float, customer_name: str) -> dict:
+    """Dispatch to live or mock payment service based on PAYMENT_MODE env var."""
+    settings = get_settings()
+    if settings.payment_mode.lower() == "live":
+        return _live_create_va(payment_ref, amount, customer_name)
+    return _mock_create_va(payment_ref, amount, customer_name)
 
 
 def _get_or_create_customer(
