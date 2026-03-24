@@ -10,7 +10,8 @@ import json
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
-from sqlalchemy.orm import Session
+from sqlalchemy import update
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.config import get_settings
@@ -52,7 +53,12 @@ async def interswitch_webhook(
     if not payment_ref:
         raise HTTPException(status_code=400, detail="Missing paymentReference in payload")
 
-    debt = db.query(Debt).filter(Debt.payment_ref == payment_ref).first()
+    debt = (
+        db.query(Debt)
+        .options(joinedload(Debt.trader), joinedload(Debt.customer))
+        .filter(Debt.payment_ref == payment_ref)
+        .first()
+    )
     if not debt:
         # Return 200 so Interswitch doesn't retry — we just don't know this ref
         return {"status": "ignored", "reason": "unknown payment_ref"}
@@ -60,16 +66,24 @@ async def interswitch_webhook(
     if debt.status == DebtStatus.PAID:
         return {"status": "already_paid"}
 
-    # Capture relationship data BEFORE commit to avoid lazy-load failures
+    # Capture relationship data BEFORE the atomic update
     trader_phone = debt.trader.phone
     customer_name = debt.customer.name
     amount = float(debt.amount)
     debt_id = debt.id
 
-    # Mark debt as paid
-    debt.status = DebtStatus.PAID
-    debt.paid_at = datetime.now(timezone.utc)
+    # Atomic idempotency guard: only transition PENDING → PAID
+    # If another concurrent webhook already flipped the status, rowcount == 0
+    result = db.execute(
+        update(Debt)
+        .where(Debt.payment_ref == payment_ref, Debt.status == DebtStatus.PENDING)
+        .values(status=DebtStatus.PAID, paid_at=datetime.now(timezone.utc))
+    )
     db.commit()
+
+    if result.rowcount == 0:
+        # Another concurrent request already processed this payment
+        return {"status": "already_paid"}
 
     # Notify trader (non-fatal — SMS failure must not crash the webhook)
     try:
