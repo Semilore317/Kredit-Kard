@@ -30,6 +30,13 @@ def _create_virtual_account(payment_ref: str, amount: float, customer_name: str)
 def _get_or_create_customer(
     db: Session, trader_id: int, name: str, phone: str
 ) -> Customer:
+    # Normalize phone: convert 080... to 23480... or strip +
+    phone = phone.strip().replace(" ", "")
+    if phone.startswith("0"):
+        phone = "234" + phone[1:]
+    elif phone.startswith("+"):
+        phone = phone[1:]
+        
     customer = (
         db.query(Customer)
         .filter(Customer.trader_id == trader_id, Customer.phone == phone)

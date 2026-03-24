@@ -7,7 +7,6 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from passlib.context import CryptContext
 from app.database import SessionLocal, engine
 from app.models import Base, Trader, Customer, Debt
 from app.models.debt import DebtStatus
