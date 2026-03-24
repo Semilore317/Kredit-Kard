@@ -326,17 +326,29 @@
 				},
 				{
 					"name": "Interswitch Webhook (Advanced)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Automatically compute the HMAC-SHA512 signature of the request body",
+									"var secret = pm.collectionVariables.get('webhook_secret');",
+									"if (!secret) {\n    console.warn('Set webhook_secret in collection variables to generate valid signature!');\n}",
+									"var body = pm.request.body.raw;",
+									"var hash = CryptoJS.HmacSHA512(body, secret);",
+									"var signature = hash.toString(CryptoJS.enc.Hex);",
+									"pm.request.headers.add({key: 'x-interswitch-signature', value: signature});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
 								"value": "application/json"
-							},
-							{
-								"key": "x-interswitch-signature",
-								"value": "YOUR_HMAC_SIGNATURE_HERE",
-								"description": "Requires HMAC-SHA512 of payload using webhook_secret"
 							}
 						],
 						"body": {
@@ -379,6 +391,11 @@
 		{
 			"key": "payment_ref",
 			"value": ""
+		},
+		{
+			"key": "webhook_secret",
+			"value": "your-webhook-secret",
+			"type": "string"
 		}
 	]
 }
