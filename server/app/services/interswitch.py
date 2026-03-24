@@ -98,7 +98,7 @@ def create_virtual_account(
     payload = {
         "merchantCode": settings.interswitch_client_id,
         "payableCode": payment_ref,
-        "amount": int(amount * 100),  # Interswitch expects kobo
+        "amount": round(amount * 100),  # Interswitch expects kobo; round() avoids float drift
         "customerName": customer_name,
         "customerEmail": "",  # optional
     }
@@ -113,8 +113,9 @@ def create_virtual_account(
         response.raise_for_status()
         data = response.json()
         virtual_account_no = data.get("accountNumber", "")
-        # Real USSD strings vary by bank, using generic Quickteller string for demo
-        ussd_string = f"*322*{virtual_account_no}*{int(amount * 100)}#"
+        # Quickteller USSD format: *322*{naira amount}*{paycode}#
+        # Amount in NAIRA (not kobo) — this is what the customer dials
+        ussd_string = f"*322*{round(amount)}*{virtual_account_no}#"
         
         return {
             "virtual_account_no": virtual_account_no,

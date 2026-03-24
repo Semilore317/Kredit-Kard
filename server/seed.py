@@ -62,7 +62,7 @@ def seed():
                 description="Fertilizer supply",
                 payment_ref="KK-DEMO0001",
                 virtual_account_no="9091234567",
-                ussd_string="*322*9091234567*2000000#",
+                ussd_string="*322*20000*9091234567#",
                 status=DebtStatus.PENDING,
             ),
             Debt(
@@ -72,7 +72,7 @@ def seed():
                 description="Rice (50kg bag)",
                 payment_ref="KK-DEMO0002",
                 virtual_account_no="9092345678",
-                ussd_string="*322*9092345678*550000#",
+                ussd_string="*322*5500*9092345678#",
                 status=DebtStatus.PENDING,
             ),
             Debt(
@@ -82,7 +82,7 @@ def seed():
                 description="Palm oil",
                 payment_ref="KK-DEMO0003",
                 virtual_account_no="9093456789",
-                ussd_string="*322*9093456789*300000#",
+                ussd_string="*322*3000*9093456789#",
                 status=DebtStatus.PAID,
             ),
             Debt(
@@ -92,7 +92,7 @@ def seed():
                 description="Yam tubers",
                 payment_ref="KK-DEMO0004",
                 virtual_account_no="9094567890",
-                ussd_string="*322*9094567890*1200000#",
+                ussd_string="*322*12000*9094567890#",
                 status=DebtStatus.PENDING,
             ),
             Debt(
@@ -102,7 +102,7 @@ def seed():
                 description="Maize (bulk)",
                 payment_ref="KK-DEMO0005",
                 virtual_account_no="9095678901",
-                ussd_string="*322*9095678901*4500000#",
+                ussd_string="*322*45000*9095678901#",
                 status=DebtStatus.PENDING,
             ),
         ]
