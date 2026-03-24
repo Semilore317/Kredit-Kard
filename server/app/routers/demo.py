@@ -57,7 +57,7 @@ def simulate_payment(
 
     return {
         "status": "ok",
-        "message": f"✅ Simulated payment for ref {body.payment_ref}",
+        "message": f"Simulated payment for ref {body.payment_ref}",
         "debt_id": debt.id,
         "customer": debt.customer.name,
         "amount": float(debt.amount),
