@@ -6,6 +6,7 @@ We verify the signature before processing anything.
 """
 import hashlib
 import hmac
+import json
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
@@ -24,7 +25,7 @@ def _verify_interswitch_signature(payload: bytes, signature: str | None) -> bool
     if not signature:
         return False
     settings = get_settings()
-    expected = hmac.new(
+    expected = hmac.HMAC(
         settings.webhook_secret.encode(),
         payload,
         hashlib.sha512,
@@ -43,7 +44,8 @@ async def interswitch_webhook(
     if not _verify_interswitch_signature(raw_body, x_interswitch_signature):
         raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
-    payload = await request.json()
+    # Parse JSON from the already-read body (don't read stream twice)
+    payload = json.loads(raw_body)
 
     # Interswitch sends paymentReference matching our payment_ref
     payment_ref = payload.get("paymentReference") or payload.get("payment_reference")
@@ -58,17 +60,25 @@ async def interswitch_webhook(
     if debt.status == DebtStatus.PAID:
         return {"status": "already_paid"}
 
+    # Capture relationship data BEFORE commit to avoid lazy-load failures
+    trader_phone = debt.trader.phone
+    customer_name = debt.customer.name
+    amount = float(debt.amount)
+    debt_id = debt.id
+
     # Mark debt as paid
     debt.status = DebtStatus.PAID
     debt.paid_at = datetime.now(timezone.utc)
     db.commit()
-    db.refresh(debt)
 
-    # Notify trader
-    sms.send_payment_confirmation(
-        trader_phone=debt.trader.phone,
-        customer_name=debt.customer.name,
-        amount=float(debt.amount),
-    )
+    # Notify trader (non-fatal — SMS failure must not crash the webhook)
+    try:
+        sms.send_payment_confirmation(
+            trader_phone=trader_phone,
+            customer_name=customer_name,
+            amount=amount,
+        )
+    except Exception:
+        print(f"[Webhook] SMS notification failed for debt {debt_id}")
 
-    return {"status": "ok", "debt_id": debt.id}
+    return {"status": "ok", "debt_id": debt_id}

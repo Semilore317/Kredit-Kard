@@ -4,7 +4,7 @@ import json
 from app.config import get_settings
 
 def _generate_signature(payload_bytes: bytes, secret: str) -> str:
-    return hmac.new(
+    return hmac.HMAC(
         secret.encode(),
         payload_bytes,
         hashlib.sha512,
