@@ -70,7 +70,11 @@ def create_debt(
     payment_ref = f"KK-{uuid.uuid4().hex[:8].upper()}"
 
     # Provision virtual account via Interswitch (falls back to mock in dev)
-    payment_info = create_virtual_account(payment_ref, body.amount, customer.name)
+    try:
+        payment_info = _create_virtual_account(payment_ref, body.amount, customer.name)
+    except Exception as e:
+        db.rollback()
+        raise e
 
     debt = Debt(
         trader_id=trader.id,

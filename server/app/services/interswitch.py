@@ -7,6 +7,7 @@ import uuid
 from typing import Optional
 from app.config import get_settings
 from fastapi import HTTPException
+import threading
 
 settings = get_settings()
 
@@ -18,12 +19,14 @@ HEADERS = {
 # Cache token in memory
 _CACHED_TOKEN: Optional[str] = None
 _TOKEN_EXPIRY: float = 0
-
+_TOKEN_LOCK = threading.Lock()
 
 def _get_access_token() -> str:
     global _CACHED_TOKEN, _TOKEN_EXPIRY
-    if _CACHED_TOKEN and time.time() < _TOKEN_EXPIRY:
-        return _CACHED_TOKEN
+    
+    with _TOKEN_LOCK:
+        if _CACHED_TOKEN and time.time() < _TOKEN_EXPIRY:
+            return _CACHED_TOKEN
 
     creds = f"{settings.interswitch_client_id}:{settings.interswitch_client_secret}"
     encoded = base64.b64encode(creds.encode()).decode()
@@ -90,7 +93,6 @@ def create_virtual_account(
         "Timestamp": timestamp,
         "Nonce": nonce,
         "Signature": signature,
-        "SignatureMethod": "SHA1", # Quickteller specifies SHA1 as method header even if SHA-512 is used sometimes; we'll omit method or use SHA512. Actually standard specifies 'SHA-512' if using sha512.
         "SignatureMethod": "SHA-512",
         "TerminalId": getattr(settings, "interswitch_terminal_id", "3pInterswitch"),
     }
