@@ -9,36 +9,38 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden" style={{ background: "linear-gradient(135deg, #fde8df 0%, #fce4ec 30%, #e8eaf6 65%, #e3f2fd 100%)" }}>
-
-
+    <div className="min-h-screen flex flex-col bg-white overflow-x-hidden font-sans">
       {/* Main content */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-4 py-8 sm:py-12">
-        <div className="w-full max-w-md glassmorphism bg-white rounded-2xl shadow-lg shadow-blue-100/60 border border-slate-100 overflow-hidden px-3 pb-3">
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md bg-white border-[4px] border-slate-900 shadow-[8px_8px_0px_#0f172a] rounded-2xl overflow-hidden p-2">
           {/* Card Header */}
-          <div className="px-4 sm:px-8 pt-6 sm:pt-8  sm:pb-6 pb-6 flex flex-col items-center text-center">
-            <div className="w-14 h-14 bg-brand-primary-50 rounded-2xl flex items-center justify-center mb-4 text-brand-primary-500">
+          <div className="px-6 pt-10 pb-4 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-[#fbbf24] border-[3px] border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-2xl flex items-center justify-center mb-6 text-slate-900">
               <CreditCardIcon />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-1">Welcome to KreditKard</h1>
-            <p className="text-[11px] text-slate-400">Sign in to manage your credit records</p>
+            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter italic">KreditKard</h1>
+            <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2 px-8">
+              Digitizing Nigeria's informal credit economy
+            </p>
           </div>
 
           {/* Tab Selector */}
-          <div className="px-4 sm:px-8 pb-2">
+          <div className="px-6 py-4">
             <AuthSelector activePage={activeTab} onSelect={setActiveTab} />
           </div>
 
           {/* Form Area */}
-          <div className="px-4 sm:px-8 py-4 sm:py-6">
+          <div className="px-6 pb-10 pt-4">
             {activeTab === "signin" ? <Signin /> : <Signup />}
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="py-6 px-6 text-center text-xs text-slate-400">
-        © 2026 KreditKard. Digitizing Nigeria's informal credit economy.
+      <footer className="py-8 px-6 text-center">
+        <p className="text-xs font-black text-slate-900 uppercase tracking-widest">
+          © 2026 KreditKard • Built for the Market
+        </p>
       </footer>
     </div>
   );
