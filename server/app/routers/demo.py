@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 from app.database import get_db
 from app.models.debt import Debt, DebtStatus
-from app.services import sms
+from app.services import at
 
 router = APIRouter(prefix="/demo", tags=["Demo (Non-Production Only)"])
 
@@ -49,7 +49,7 @@ def simulate_payment(
     db.refresh(debt)
 
     # Fire trader notification (non-fatal if SMS service is down)
-    sms.send_payment_confirmation(
+    at.send_payment_confirmation(
         trader_phone=debt.trader.phone,
         customer_name=debt.customer.name,
         amount=float(debt.amount),

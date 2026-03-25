@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
 from app.config import get_settings
 from app.models.debt import Debt, DebtStatus
-from app.services import sms
+from app.services import at
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 
@@ -87,7 +87,7 @@ async def interswitch_webhook(
 
     # Notify trader (non-fatal — SMS failure must not crash the webhook)
     try:
-        sms.send_payment_confirmation(
+        at.send_payment_confirmation(
             trader_phone=trader_phone,
             customer_name=customer_name,
             amount=amount,

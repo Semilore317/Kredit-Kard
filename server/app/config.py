@@ -19,10 +19,9 @@ class Settings(BaseSettings):
     interswitch_client_id: str
     interswitch_client_secret: str
 
-    # SMS (Termii)
-    termii_base_url: str = "https://api.ng.termii.com"
-    termii_api_key: str
-    termii_sender_id: str = "KreditKard"
+    # SMS & USSD (Africa's Talking)
+    at_username: str
+    at_api_key: str
 
     # Webhooks
     webhook_secret: str
