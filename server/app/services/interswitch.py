@@ -66,6 +66,7 @@ def create_virtual_account(
     payment_ref: str,
     amount: float,
     customer_name: str,
+    customer_phone: str = "",
 ) -> dict:
     """
     Provisions a virtual account for a debt via Interswitch.
@@ -103,6 +104,7 @@ def create_virtual_account(
         "amount": round(amount * 100),  # Interswitch expects kobo; round() avoids float drift
         "customerName": customer_name,
         "customerEmail": "",  # optional
+        "customerMobile": customer_phone.replace("+", ""), # Interswitch clash prevention
     }
 
     try:

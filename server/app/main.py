@@ -1,10 +1,30 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from contextlib import asynccontextmanager
 from app.config import get_settings
-from app.routers import auth, debts, customers, webhooks, demo
+from app.routers import auth, debts, customers, webhooks, demo, ussd
+
+# Import the internal token fetcher for the warmup
+from app.services.interswitch import _get_access_token
 
 settings = get_settings()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if settings.payment_mode.lower() == "live":
+        print("[Lifecycle] Pre-warming Interswitch LIVE gateway...")
+    else:
+        print("[Lifecycle] Pre-warming Interswitch Sandbox...")
+    try:
+        _get_access_token()
+        print("[Lifecycle] Interswitch connection established.")
+    except Exception as e:
+        print(f"[Lifecycle] Warning - Interswitch warmup failed: {e}")
+        
+    yield
+    # Shutdown sequence
+
 
 app = FastAPI(
     title="KreditKard API",
@@ -13,6 +33,7 @@ app = FastAPI(
         "Log debts, generate USSD payment codes, and clear balances via webhook."
     ),
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -32,6 +53,7 @@ app.include_router(auth.router)
 app.include_router(debts.router)
 app.include_router(customers.router)
 app.include_router(webhooks.router)
+app.include_router(ussd.router)
 
 # Only mount the demo router in non-production environments
 if settings.environment.lower() != "production":

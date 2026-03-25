@@ -12,6 +12,7 @@ def create_virtual_account(
     payment_ref: str,
     amount: float,
     customer_name: str,
+    customer_phone: str = "",
 ) -> dict:
     """
     Mock version of interswitch.create_virtual_account().
