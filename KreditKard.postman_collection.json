@@ -367,6 +367,53 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Africa's Talking USSD Simulator",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "sessionId",
+									"value": "DEMO-SESSION-12345",
+									"type": "text"
+								},
+								{
+									"key": "serviceCode",
+									"value": "*384*573348#",
+									"type": "text"
+								},
+								{
+									"key": "phoneNumber",
+									"value": "+2348011112222",
+									"type": "text"
+								},
+								{
+									"key": "text",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/ussd",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ussd"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
@@ -394,7 +441,7 @@
 		},
 		{
 			"key": "webhook_secret",
-			"value": "your-webhook-secret",
+			"value": "test-webhook-secret",
 			"type": "string"
 		}
 	]
