@@ -15,6 +15,10 @@ class DebtCreate(BaseModel):
         cleaned = re.sub(r"\s+", "", v)
         if not re.match(r"^(\+234|0)[789]\d{9}$", cleaned):
             raise ValueError("Enter a valid Nigerian phone number")
+        if cleaned.startswith("0"):
+            cleaned = "+234" + cleaned[1:]
+        elif cleaned.startswith("234"):
+            cleaned = "+" + cleaned
         return cleaned
 
     @field_validator("amount")

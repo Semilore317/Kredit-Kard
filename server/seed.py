@@ -28,13 +28,13 @@ def seed():
         traders = [
             Trader(
                 name="Mama Titi",
-                phone="08012345678",
+                phone="+2348012345678",
                 business_name="Mama Titi's Store",
                 pin_hash=get_hash("1234"),
             ),
             Trader(
                 name="Alhaji Bello",
-                phone="08098765432",
+                phone="+2348098765432",
                 business_name="Bello Agro",
                 pin_hash=get_hash("5678"),
             ),
@@ -44,10 +44,10 @@ def seed():
 
         # --- Customers ---
         customers = [
-            Customer(trader_id=traders[0].id, name="Chidi Okonkwo", phone="08011112222"),
-            Customer(trader_id=traders[0].id, name="Ngozi Eze", phone="08033334444"),
-            Customer(trader_id=traders[0].id, name="Ahmed Musa", phone="08055556666"),
-            Customer(trader_id=traders[1].id, name="Emeka Obi", phone="08077778888"),
+            Customer(trader_id=traders[0].id, name="Chidi Okonkwo", phone="+2348011112222"),
+            Customer(trader_id=traders[0].id, name="Ngozi Eze", phone="+2348033334444"),
+            Customer(trader_id=traders[0].id, name="Ahmed Musa", phone="+2348055556666"),
+            Customer(trader_id=traders[1].id, name="Emeka Obi", phone="+2348077778888"),
         ]
         db.add_all(customers)
         db.flush()

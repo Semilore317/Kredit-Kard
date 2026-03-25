@@ -11,10 +11,13 @@ class TraderRegister(BaseModel):
     @field_validator("phone")
     @classmethod
     def validate_phone(cls, v: str) -> str:
-        # Accept 080XXXXXXXX or +23480XXXXXXXX
         cleaned = re.sub(r"\s+", "", v)
         if not re.match(r"^(\+234|0)[789]\d{9}$", cleaned):
             raise ValueError("Enter a valid Nigerian phone number")
+        if cleaned.startswith("0"):
+            cleaned = "+234" + cleaned[1:]
+        elif cleaned.startswith("234"):
+            cleaned = "+" + cleaned
         return cleaned
 
     @field_validator("pin")
@@ -28,6 +31,18 @@ class TraderRegister(BaseModel):
 class TraderLogin(BaseModel):
     phone: str
     pin: str
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str) -> str:
+        cleaned = re.sub(r"\s+", "", v)
+        if not re.match(r"^(\+234|0)[789]\d{9}$", cleaned):
+            raise ValueError("Enter a valid Nigerian phone number")
+        if cleaned.startswith("0"):
+            cleaned = "+234" + cleaned[1:]
+        elif cleaned.startswith("234"):
+            cleaned = "+" + cleaned
+        return cleaned
 
 
 class TokenResponse(BaseModel):

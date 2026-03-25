@@ -14,17 +14,17 @@ from app.schemas.debt import DebtCreate, DebtOut, DebtListOut
 from app.config import get_settings
 from app.services.interswitch import create_virtual_account as _live_create_va
 from app.services.mock_payment import create_virtual_account as _mock_create_va
-from app.services import sms
+from app.services import at
 
 router = APIRouter(prefix="/debts", tags=["Debts"])
 
 
-def _create_virtual_account(payment_ref: str, amount: float, customer_name: str) -> dict:
+def _create_virtual_account(payment_ref: str, amount: float, customer_name: str, customer_phone: str) -> dict:
     """Dispatch to live or mock payment service based on PAYMENT_MODE env var."""
     settings = get_settings()
     if settings.payment_mode.lower() == "live":
-        return _live_create_va(payment_ref, amount, customer_name)
-    return _mock_create_va(payment_ref, amount, customer_name)
+        return _live_create_va(payment_ref, amount, customer_name, customer_phone)
+    return _mock_create_va(payment_ref, amount, customer_name, customer_phone)
 
 
 def _get_or_create_customer(
@@ -33,9 +33,9 @@ def _get_or_create_customer(
     # Normalize phone: convert 080... to 23480... or strip +
     phone = phone.strip().replace(" ", "")
     if phone.startswith("0"):
-        phone = "234" + phone[1:]
-    elif phone.startswith("+"):
-        phone = phone[1:]
+        phone = "+234" + phone[1:]
+    elif phone.startswith("234"):
+        phone = "+" + phone
         
     customer = (
         db.query(Customer)
@@ -78,7 +78,7 @@ def create_debt(
 
     # Provision virtual account via Interswitch (falls back to mock in dev)
     try:
-        payment_info = _create_virtual_account(payment_ref, body.amount, customer.name)
+        payment_info = _create_virtual_account(payment_ref, body.amount, customer.name, customer.phone)
     except Exception as e:
         db.rollback()
         raise e
@@ -97,7 +97,7 @@ def create_debt(
     db.refresh(debt)
 
     # Fire SMS — non-blocking (failure doesn't raise)
-    sms.send_debt_notification(
+    at.send_debt_notification(
         customer_phone=customer.phone,
         customer_name=customer.name,
         trader_business_name=trader.business_name,
