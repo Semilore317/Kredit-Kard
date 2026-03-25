@@ -5,23 +5,21 @@ import Dashboard from "./pages/dashboard/Dashboard"
 import Settings from "./pages/settings/Settings"
 
 function App() {
-  const isAuthenticated = !!localStorage.getItem("token");
-
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/auth"} replace />} />
+      <Route path="/" element={<Navigate to={localStorage.getItem("token") ? "/dashboard" : "/auth"} replace />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/signup" element={<Navigate to="/auth" replace />} />
       <Route path="/signin" element={<Navigate to="/auth" replace />} />
       
-      {/* Protected Routes */}
+      {/* Protected Routes - Evaluated on every transition */}
       <Route 
         path="/dashboard" 
-        element={isAuthenticated ? <Dashboard /> : <Navigate to="/auth" replace />} 
+        element={<AuthGate><Dashboard /></AuthGate>} 
       />
       <Route 
         path="/settings" 
-        element={isAuthenticated ? <Settings /> : <Navigate to="/auth" replace />} 
+        element={<AuthGate><Settings /></AuthGate>} 
       />
       
       <Route path="/landing" element={<Landing />} />
@@ -29,5 +27,12 @@ function App() {
     </Routes>
   )
 }
+
+// Simple internal gate component to ensure token is checked on every route hit
+const AuthGate = ({ children }: { children: React.ReactNode }) => {
+    const token = localStorage.getItem("token");
+    if (!token) return <Navigate to="/auth" replace />;
+    return <>{children}</>;
+};
 
 export default App
