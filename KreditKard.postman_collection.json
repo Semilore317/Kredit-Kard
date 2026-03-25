@@ -1,0 +1,401 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+		"name": "KreditKard API",
+		"description": "Endpoints for the KreditKard fintech backend.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register Trader",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Demo Trader\",\n    \"phone\": \"08012345678\",\n    \"business_name\": \"Demo Store\",\n    \"pin\": \"1234\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Trader",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.access_token) {",
+									"    pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"08012345678\",\n    \"pin\": \"1234\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Debts",
+			"item": [
+				{
+					"name": "Create Debt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) {",
+									"    pm.collectionVariables.set(\"debt_id\", jsonData.id);",
+									"}",
+									"if (jsonData.payment_ref) {",
+									"    pm.collectionVariables.set(\"payment_ref\", jsonData.payment_ref);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_name\": \"John Doe\",\n    \"customer_phone\": \"08011112222\",\n    \"amount\": 5000,\n    \"description\": \"Bag of Rice\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/debts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"debts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Debts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/debts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"debts"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "PENDING",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Debt Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/debts/{{debt_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"debts",
+								"{{debt_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Debt",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/debts/{{debt_id}}/cancel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"debts",
+								"{{debt_id}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customers",
+			"item": [
+				{
+					"name": "List Customers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.length > 0) {",
+									"    pm.collectionVariables.set(\"customer_id\", jsonData[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/customers",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Customer Debts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/customers/{{customer_id}}/debts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"customers",
+								"{{customer_id}}",
+								"debts"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Webhooks & Demo",
+			"item": [
+				{
+					"name": "Simulate Payment (Demo)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"payment_ref\": \"{{payment_ref}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/demo/simulate-payment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"demo",
+								"simulate-payment"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Interswitch Webhook (Advanced)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Automatically compute the HMAC-SHA512 signature of the request body",
+									"var secret = pm.collectionVariables.get('webhook_secret');",
+									"if (!secret) {\n    console.warn('Set webhook_secret in collection variables to generate valid signature!');\n}",
+									"var body = pm.request.body.raw;",
+									"var hash = CryptoJS.HmacSHA512(body, secret);",
+									"var signature = hash.toString(CryptoJS.enc.Hex);",
+									"pm.request.headers.add({key: 'x-interswitch-signature', value: signature});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"paymentReference\": \"{{payment_ref}}\",\n    \"amount\": 500000,\n    \"transactionDate\": \"2023-10-01T12:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/webhooks/interswitch",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"webhooks",
+								"interswitch"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "debt_id",
+			"value": ""
+		},
+		{
+			"key": "customer_id",
+			"value": ""
+		},
+		{
+			"key": "payment_ref",
+			"value": ""
+		},
+		{
+			"key": "webhook_secret",
+			"value": "your-webhook-secret",
+			"type": "string"
+		}
+	]
+}

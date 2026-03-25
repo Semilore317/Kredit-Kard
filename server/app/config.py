@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     # Webhooks
     webhook_secret: str
 
+    # Payment mode: 'live' uses real Interswitch API, 'mock' returns fake data (safe for demos)
+    payment_mode: str = "mock"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 

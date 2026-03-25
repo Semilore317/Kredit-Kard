@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
 from app.main import app
@@ -28,7 +29,18 @@ def db_session(setup_db):
     connection = engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
+    
+    # Nested session transactions (savepoints) allow the code to call commit()
+    # without actually committing the outer transaction.
+    session.begin_nested()
+    
+    @event.listens_for(session, "after_transaction_end")
+    def restart_savepoint(session, transaction):
+        if transaction.nested and not transaction._parent.nested:
+            session.begin_nested()
+
     yield session
+    
     session.close()
     transaction.rollback()
     connection.close()
