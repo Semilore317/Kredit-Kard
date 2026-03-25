@@ -11,7 +11,7 @@ def test_register_trader(client):
     assert response.status_code == 201
     data = response.json()
     assert data["name"] == "Test Trader"
-    assert data["phone"] == "08011112222"
+    assert data["phone"] == "+2348011112222"
     assert "id" in data
 
 
