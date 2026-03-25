@@ -16,6 +16,7 @@ interface Debt {
   customer_phone: string;
   amount: number;
   status: "PENDING" | "PAID" | "CANCELLED";
+  payment_ref: string;
   created_at: string;
 }
 
