@@ -27,6 +27,16 @@ class Settings(BaseSettings):
     # Webhooks
     webhook_secret: str
 
+    # CORS
+    cors_origins: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+    ]
+
     # Payment mode: 'live' uses real Interswitch API, 'mock' returns fake data (safe for demos)
     payment_mode: str = "mock"
 
