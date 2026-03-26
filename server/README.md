@@ -1,90 +1,88 @@
-# KreditKard — Server
+# KreditKard — Backend Ledger System
 
-FastAPI backend for KreditKard. Handles trader auth, debt logging, Interswitch virtual account provisioning, SMS notifications, and webhook-driven payment clearing.
+Digitizing Nigeria's informal credit economy through high-performance FastAPI architecture and Interswitch integration.
 
-## Prerequisites
+## 📌 Problem Statement
+Informal credit in Nigeria is massive but purely analog. Market traders log debts in paper ledgers, leading to disputes, lost records, and unreliable collection. KreditKard digitizes this "book" economy, providing a secure, mobile-first interface to log debts, auto-generate USSD/Transfer payment codes, and settle balances in real-time via integrated virtual accounts.
 
+## 🏗 Technical Architecture
+
+- **FastAPI**: High-performance Python framework for rapid API development.
+- **Interswitch Quickteller Business**: Real-time dynamic virtual account provisioning via Interswitch APIs.
+- **PostgreSQL**: Relational database ensuring transactional integrity for financial ledgers.
+- **Alembic**: Database migration management.
+- **Termii SMS**: Automated customer notifications and payment confirmations.
+- **Pydantic Settings**: Secure, environment-based configuration management.
+
+---
+
+## 🛠 Setup & Local Development
+
+### Prerequisites
 - Python 3.11+
-- PostgreSQL running locally (or a connection string to a hosted DB)
+- PostgreSQL
+- Termii & Interswitch API Keys (available in `.env.example`)
 
-## Setup
+### Installation
 
 ```bash
 cd server
 
-# 1. Create virtual environment
+# 1. Environment Setup
 python -m venv .venv
 .venv\Scripts\activate        # Windows
 # source .venv/bin/activate   # macOS/Linux
 
-# 2. Install dependencies
+# 2. Install Dependencies
 pip install -r requirements.txt
 
-# 3. Configure environment
+# 3. Configure Environment
 cp .env.example .env
-# Edit .env with your DATABASE_URL, Interswitch credentials, Termii key, etc.
+# Edit .env with your DATABASE_URL and API keys
 
-# 4. Run migrations
+# 4. Initialize Database
 alembic upgrade head
 
-# 5. (Optional) Seed demo data
-python seed.py
-
-# 6. Start the dev server
+# 5. Start Application
 uvicorn app.main:app --reload
 ```
 
-API docs available at: http://localhost:8000/docs
+---
 
-## Project Structure
+## 🔌 API Reference
 
-```
-server/
-├── app/
-│   ├── main.py           # FastAPI app, middleware, router registration
-│   ├── config.py         # Pydantic settings (reads .env)
-│   ├── database.py       # SQLAlchemy engine + get_db dependency
-│   ├── dependencies.py   # JWT auth dependency (get_current_trader)
-│   ├── models/
-│   │   ├── trader.py
-│   │   ├── customer.py
-│   │   └── debt.py
-│   ├── schemas/
-│   │   ├── auth.py
-│   │   ├── debt.py
-│   │   └── customer.py
-│   ├── routers/
-│   │   ├── auth.py       # POST /auth/register, POST /auth/login
-│   │   ├── debts.py      # POST /debts, GET /debts, GET /debts/{id}, PATCH /debts/{id}/cancel
-│   │   ├── customers.py  # GET /customers, GET /customers/{id}/debts
-│   │   └── webhooks.py   # POST /webhooks/interswitch
-│   └── services/
-│       ├── interswitch.py  # Virtual account provisioning
-│       └── sms.py          # Termii SMS wrapper
-├── alembic/              # DB migrations
-├── alembic.ini
-├── seed.py               # Demo data seeder
-├── requirements.txt
-└── .env.example
-```
+Full interactive documentation is available at: `http://localhost:8000/docs`
 
-## Key Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/auth/register` | Trader onboarding |
+| `POST` | `/auth/login` | Secure JWT authentication |
+| `POST` | `/debts` | Log new debt + Provision Interswitch Virtual Account |
+| `GET` | `/debts` | List all debts (search/filter supported) |
+| `GET` | `/analytics/dashboard` | **Live** aggregation: Credit limits, balance, and trends |
+| `POST` | `/webhooks/interswitch` | Secure payment confirmation via Interswitch callback |
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/auth/register` | ❌ | Register trader |
-| `POST` | `/auth/login` | ❌ | Login → JWT |
-| `POST` | `/debts` | ✅ | Log debt, auto-provision virtual account + send SMS |
-| `GET` | `/debts` | ✅ | List debts (filter by `?status=PENDING`) |
-| `GET` | `/debts/{id}` | ✅ | Debt detail |
-| `PATCH` | `/debts/{id}/cancel` | ✅ | Cancel a pending debt |
-| `GET` | `/customers` | ✅ | Customers + outstanding balances |
-| `GET` | `/customers/{id}/debts` | ✅ | Customer debt history |
-| `POST` | `/webhooks/interswitch` | 🔑 sig | Interswitch payment webhook |
-| `GET` | `/health` | ❌ | Health check |
+---
 
-## Running Tests
+## 🤝 Team Contributions
 
-```bash
-pytest
-```
+- **Technical Lead / Backend**: [Placeholder]
+- **Frontend Engineer**: [Placeholder]
+- **Product Designer**: [Placeholder]
+- **Quality Assurance**: [Placeholder]
+
+## 🚀 Backend Contribution Guide
+
+### Local Environment
+Ensure you have a local PostgreSQL instance. Use Docker if preferred:
+`docker run --name kk-postgres -e POSTGRES_PASSWORD=pass -p 5432:5432 -d postgres`
+
+### PR Workflow
+1. Create a feature branch: `git checkout -b feature/your-feature`
+2. Commit changes using Conventional Commits (e.g., `feat: add analytics endpoint`).
+3. Run tests before pushing: `pytest`
+4. Submit a PR to the `main` branch.
+
+### API Documentation
+- Local: [http://localhost:8000/docs](http://localhost:8000/docs)
+- Production: [https://api.kreditkard.app/docs](https://api.kreditkard.app/docs)
