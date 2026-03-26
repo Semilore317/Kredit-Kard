@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router";
 import Signin from "../signin/Signin";
 import Signup from "../signup/Signup";
 import CreditCardIcon from "../../components/CreditCardIcon";
@@ -6,7 +7,16 @@ import AuthSelector from "../../components/AuthSelector";
 
 
 const Auth = () => {
-  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get("mode");
+  const initialTab = mode === "register" ? "signup" : "signin";
+
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">(initialTab);
+
+  useEffect(() => {
+    if (mode === "register") setActiveTab("signup");
+    else if (mode === "login") setActiveTab("signin");
+  }, [mode]);
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden" style={{ background: "linear-gradient(135deg, #fde8df 0%, #fce4ec 30%, #e8eaf6 65%, #e3f2fd 100%)" }}>

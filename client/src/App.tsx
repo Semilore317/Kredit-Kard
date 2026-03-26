@@ -4,7 +4,6 @@ import Auth from "./pages/auth/Auth"
 import DashboardLayout from "./components/dashboard/DashboardLayout"
 import DashboardHome from "./pages/dashboard/DashboardHome"
 import Debts from "./pages/dashboard/Debts"
-import NewDebt from "./pages/dashboard/NewDebt"
 import Customers from "./pages/dashboard/Customers"
 import Transactions from "./pages/dashboard/Transactions"
 import Messages from "./pages/dashboard/Messages"
@@ -24,7 +23,6 @@ function App() {
       <Route path="/app" element={<DashboardLayout />}>
         <Route index element={<DashboardHome />} />
         <Route path="debts" element={<Debts />} />
-        <Route path="debts/new" element={<NewDebt />} />
         <Route path="customers" element={<Customers />} />
         <Route path="transactions" element={<Transactions />} />
         <Route path="messages" element={<Messages />} />

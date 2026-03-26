@@ -3,6 +3,11 @@ from pydantic import BaseModel, field_validator
 import re
 
 
+class CustomerNested(BaseModel):
+    id: int
+    name: str
+    phone: str
+
 class DebtCreate(BaseModel):
     customer_name: str
     customer_phone: str
@@ -27,9 +32,7 @@ class DebtCreate(BaseModel):
 
 class DebtOut(BaseModel):
     id: int
-    customer_id: int
-    customer_name: str
-    customer_phone: str
+    customer: CustomerNested
     amount: float
     description: str | None
     status: str
@@ -44,7 +47,7 @@ class DebtOut(BaseModel):
 
 class DebtListOut(BaseModel):
     id: int
-    customer_name: str
+    customer: CustomerNested
     amount: float
     status: str
     ussd_string: str | None

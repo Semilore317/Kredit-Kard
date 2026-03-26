@@ -1,20 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Plus, Search, MoreHorizontal } from "lucide-react";
+import { Plus, Search, XCircle } from "lucide-react";
 import StatusBadge from "../../components/dashboard/StatusBadge";
-import { debts, type DebtStatus } from "../../data/mockData";
+import { useDispatch, useSelector } from "react-redux";
+import { type AppDispatch, type RootState } from "../../store/store";
+import { fetchDebts, cancelDebt } from "../../store/slices/debtsSlice";
+import NewDebtModal from "./NewDebt";
 
-const statuses: (DebtStatus | "ALL")[] = ["ALL", "PENDING", "PAID", "PART PAID", "OVERDUE"];
+const statuses = ["ALL", "PENDING", "PAID", "PART PAID", "OVERDUE"];
 
 const Debts = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<DebtStatus | "ALL">("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const { items: debts, status } = useSelector((state: RootState) => state.debts);
+
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchDebts());
+    }
+  }, [status, dispatch]);
+
+  const handleCancel = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to cancel this debt?")) {
+      dispatch(cancelDebt(id));
+    }
+  };
 
   const filtered = debts.filter((d) => {
     const matchSearch =
-      d.customer.toLowerCase().includes(search.toLowerCase()) ||
-      d.phone.includes(search);
+      d.customer.name.toLowerCase().includes(search.toLowerCase()) ||
+      d.customer.phone.includes(search);
     const matchStatus = statusFilter === "ALL" || d.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -25,7 +45,7 @@ const Debts = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-extrabold text-slate-900">Debts</h1>
         <button
-          onClick={() => navigate("/app/debts/new")}
+          onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 bg-brand-primary-500 hover:bg-brand-primary-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -39,7 +59,7 @@ const Debts = () => {
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
             type="text"
-            placeholder="Search name, phone, ref..."
+            placeholder="Search name, phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="bg-transparent text-sm text-slate-700 placeholder-slate-400 outline-none w-full"
@@ -47,7 +67,7 @@ const Debts = () => {
         </div>
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as DebtStatus | "ALL")}
+          onChange={(e) => setStatusFilter(e.target.value)}
           className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 outline-none cursor-pointer"
         >
           {statuses.map((s) => (
@@ -60,43 +80,51 @@ const Debts = () => {
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-100">
-              <th className="w-10 px-4 py-4"><input type="checkbox" className="rounded" /></th>
-              <th className="text-left px-4 py-4 text-slate-500 font-medium">Customer</th>
-              <th className="text-left px-4 py-4 text-slate-500 font-medium">Amount</th>
-              <th className="text-left px-4 py-4 text-slate-500 font-medium">Status</th>
-              <th className="text-left px-4 py-4 text-slate-500 font-medium">Created</th>
-              <th className="text-left px-4 py-4 text-slate-500 font-medium">Due</th>
-              <th className="w-10 px-4 py-4" />
+            <tr className="border-b border-slate-100 bg-slate-50/50">
+              <th className="text-left px-6 py-4 text-slate-500 font-medium">Customer</th>
+              <th className="text-left px-6 py-4 text-slate-500 font-medium">Amount</th>
+              <th className="text-left px-6 py-4 text-slate-500 font-medium">Status</th>
+              <th className="text-left px-6 py-4 text-slate-500 font-medium">Created</th>
+              <th className="text-right px-6 py-4 text-slate-500 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((debt) => (
               <tr key={debt.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-4"><input type="checkbox" className="rounded" /></td>
-                <td className="px-4 py-4">
-                  <p className="font-semibold text-slate-900">{debt.customer}</p>
-                  <p className="text-slate-400 text-xs mt-0.5">{debt.phone}</p>
+                <td className="px-6 py-4">
+                  <p className="font-semibold text-slate-900">{debt.customer.name}</p>
+                  <p className="text-slate-400 text-xs mt-0.5">{debt.customer.phone}</p>
                 </td>
-                <td className="px-4 py-4 font-bold text-slate-900">₦{debt.amount.toLocaleString()}</td>
-                <td className="px-4 py-4"><StatusBadge label={debt.status} /></td>
-                <td className="px-4 py-4 text-slate-500">{debt.created}</td>
-                <td className="px-4 py-4 text-slate-500">{debt.due}</td>
-                <td className="px-4 py-4">
-                  <button className="p-1 rounded hover:bg-slate-100 transition-colors">
-                    <MoreHorizontal className="w-4 h-4 text-slate-400" />
-                  </button>
+                <td className="px-6 py-4 font-bold text-slate-900">₦{debt.amount.toLocaleString()}</td>
+                <td className="px-6 py-4"><StatusBadge label={debt.status} /></td>
+                <td className="px-6 py-4 text-slate-500">
+                   {new Date(debt.created_at).toLocaleDateString()}
+                </td>
+                <td className="px-6 py-4 text-right">
+                  {debt.status === "PENDING" && (
+                     <button 
+                       onClick={(e) => handleCancel(e, debt.id)} 
+                       className="text-red-500 hover:text-red-700 font-medium p-1 transition-colors flex items-center gap-1 justify-end w-full"
+                       title="Cancel Debt"
+                     >
+                       <XCircle className="w-4 h-4" /> Cancel
+                     </button>
+                  )}
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-slate-400">No debts found.</td>
+                <td colSpan={5} className="text-center py-12 text-slate-400">
+                  {status === 'loading' ? 'Loading debts...' : 'No debts found.'}
+                </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
+      <NewDebtModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };

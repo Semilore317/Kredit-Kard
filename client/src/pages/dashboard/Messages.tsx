@@ -1,17 +1,40 @@
 import { useState } from "react";
 import { MessageSquare, X } from "lucide-react";
 import StatusBadge from "../../components/dashboard/StatusBadge";
-import { messages, customers } from "../../data/mockData";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store/store";
 
 const Messages = () => {
   const [showCompose, setShowCompose] = useState(false);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
   const [template, setTemplate] = useState("reminder");
 
-  const toggleCustomer = (id: string) => {
+  const { items: customers } = useSelector((state: RootState) => state.customers);
+  const [messages, setMessages] = useState<any[]>([]); // Local state for UX demonstration
+
+  const toggleCustomer = (id: number) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
+  };
+  const handleSend = () => {
+    if (selected.length === 0) return;
+
+    const newMsgs = selected.map(id => {
+      const c = customers.find(x => x.id === id);
+      return {
+        id: Math.random(),
+        to: c?.name || "Unknown",
+        phone: c?.phone || "",
+        message: `Automated ${template} message sent via KreditKard.`,
+        status: "SENT",
+        date: new Date().toLocaleDateString()
+      };
+    });
+
+    setMessages([...newMsgs, ...messages]);
+    setShowCompose(false);
+    setSelected([]);
   };
 
   return (
@@ -32,7 +55,7 @@ const Messages = () => {
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-100">
+            <tr className="border-b border-slate-100 bg-slate-50/50">
               <th className="text-left px-6 py-4 text-slate-500 font-medium">To</th>
               <th className="text-left px-6 py-4 text-slate-500 font-medium">Message</th>
               <th className="text-left px-6 py-4 text-slate-500 font-medium">Status</th>
@@ -53,6 +76,11 @@ const Messages = () => {
                 <td className="px-6 py-4 text-slate-500">{m.date}</td>
               </tr>
             ))}
+            {messages.length === 0 && (
+              <tr>
+                <td colSpan={4} className="text-center py-12 text-slate-400">No message history yet.</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -108,6 +136,9 @@ const Messages = () => {
                       </div>
                     </label>
                   ))}
+                  {customers.length === 0 && (
+                    <div className="px-4 py-6 text-center text-sm text-slate-400">No customers found.</div>
+                  )}
                 </div>
               </div>
 
@@ -120,7 +151,7 @@ const Messages = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => setShowCompose(false)}
+                  onClick={handleSend}
                   className="flex-1 bg-brand-primary-500 hover:bg-brand-primary-600 text-white text-sm font-semibold py-3 rounded-xl transition-colors"
                 >
                   Send {selected.length > 0 ? `(${selected.length})` : ""}

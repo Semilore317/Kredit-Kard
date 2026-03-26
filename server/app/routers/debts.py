@@ -52,9 +52,11 @@ def _get_or_create_customer(
 def _debt_to_out(debt: Debt) -> dict:
     return {
         "id": debt.id,
-        "customer_id": debt.customer_id,
-        "customer_name": debt.customer.name,
-        "customer_phone": debt.customer.phone,
+        "customer": {
+            "id": debt.customer_id,
+            "name": debt.customer.name,
+            "phone": debt.customer.phone,
+        },
         "amount": float(debt.amount),
         "description": debt.description,
         "status": debt.status.value,
@@ -125,7 +127,11 @@ def list_debts(
     return [
         {
             "id": d.id,
-            "customer_name": d.customer.name,
+            "customer": {
+                "id": d.customer_id,
+                "name": d.customer.name,
+                "phone": d.customer.phone,
+            },
             "amount": float(d.amount),
             "status": d.status.value,
             "ussd_string": d.ussd_string,

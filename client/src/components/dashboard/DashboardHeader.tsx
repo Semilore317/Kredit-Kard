@@ -1,6 +1,10 @@
 import { Bell, Zap, CreditCard } from "lucide-react";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store/store";
 
 const DashboardHeader = () => {
+  const businessName = useSelector((state: RootState) => state.auth.trader?.business_name || "Loading...");
+
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-slate-200 flex items-center gap-4 px-6 py-3">
       {/* Search */}
@@ -29,7 +33,7 @@ const DashboardHeader = () => {
         {/* User */}
         <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
           <CreditCard className="w-4 h-4 text-slate-500" />
-          Mama Tola Stores
+          {businessName}
         </div>
       </div>
     </header>

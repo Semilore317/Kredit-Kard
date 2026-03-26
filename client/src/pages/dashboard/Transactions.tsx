@@ -1,6 +1,10 @@
 import { useState } from "react";
 import StatusBadge from "../../components/dashboard/StatusBadge";
-import { transactions, type TxnChannel, type TxnStatus } from "../../data/mockData";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store/store";
+
+type TxnStatus = "PENDING" | "SUCCESS" | "FAILED";
+type TxnChannel = "TRANSFER" | "USSD" | "QR" | "CARD";
 
 const statusOptions: (TxnStatus | "ALL")[] = ["ALL", "PENDING", "SUCCESS", "FAILED"];
 const channelOptions: (TxnChannel | "ALL")[] = ["ALL", "TRANSFER", "USSD", "QR", "CARD"];
@@ -8,6 +12,21 @@ const channelOptions: (TxnChannel | "ALL")[] = ["ALL", "TRANSFER", "USSD", "QR",
 const Transactions = () => {
   const [statusFilter, setStatusFilter] = useState<TxnStatus | "ALL">("ALL");
   const [channelFilter, setChannelFilter] = useState<TxnChannel | "ALL">("ALL");
+
+  const { items: debts } = useSelector((state: RootState) => state.debts);
+
+  // Create a pseudo-transaction list from the paid debts to replace mockData
+  const transactions = debts
+    .filter(debt => debt.status === 'PAID')
+    .map(debt => ({
+      id: debt.id,
+      reference: debt.payment_ref || `TXN-${debt.id}`,
+      customer: debt.customer.name,
+      amount: debt.amount,
+      channel: "TRANSFER" as TxnChannel,
+      status: "SUCCESS" as TxnStatus,
+      date: new Date(debt.created_at).toLocaleDateString(),
+    }));
 
   const filtered = transactions.filter((t) => {
     const matchStatus = statusFilter === "ALL" || t.status === statusFilter;
@@ -45,7 +64,7 @@ const Transactions = () => {
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-100">
+            <tr className="border-b border-slate-100 bg-slate-50/50">
               <th className="text-left px-6 py-4 text-slate-500 font-medium">Reference</th>
               <th className="text-left px-6 py-4 text-slate-500 font-medium">Customer</th>
               <th className="text-left px-6 py-4 text-slate-500 font-medium">Amount</th>

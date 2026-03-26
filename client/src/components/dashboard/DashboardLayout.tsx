@@ -1,8 +1,18 @@
+import { useEffect } from "react";
 import { Outlet } from "react-router";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../store/store";
+import { fetchCurrentUser } from "../../store/slices/authSlice";
 import Sidebar from "./Sidebar";
 import DashboardHeader from "./DashboardHeader";
 
 const DashboardLayout = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(fetchCurrentUser());
+  }, [dispatch]);
+
   return (
     <div className="flex min-h-screen bg-[#f0f2f5]">
       <Sidebar />

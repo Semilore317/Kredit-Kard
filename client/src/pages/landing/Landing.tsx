@@ -50,10 +50,10 @@ const Landing = () => {
 
                     {/* CTA Buttons */}
                     <div className="flex flex-col sm:flex-row items-center gap-4 mt-2 w-full sm:w-auto">
-                        <button className="cursor-pointer w-full sm:w-auto bg-brand-primary-500 hover:bg-brand-primary-600 active:bg-brand-primary-700 text-white font-semibold px-6 py-4 rounded-xl transition-colors shadow-sm text-sm sm:text-base">
+                        <button onClick={() => navigate("/auth?mode=register")} className="cursor-pointer w-full sm:w-auto bg-brand-primary-500 hover:bg-brand-primary-600 active:bg-brand-primary-700 text-white font-semibold px-6 py-4 rounded-xl transition-colors shadow-sm text-sm sm:text-base">
                             Get Started Free
                         </button>
-                        <button className="cursor-pointer w-full sm:w-auto text-slate-700 hover:text-brand-primary-500 font-semibold px-6 py-4 rounded-xl border border-slate-200 hover:border-brand-primary-300 transition-colors text-sm sm:text-base bg-white">
+                        <button onClick={() => navigate("/auth?mode=login")} className="cursor-pointer w-full sm:w-auto text-slate-700 hover:text-brand-primary-500 font-semibold px-6 py-4 rounded-xl border border-slate-200 hover:border-brand-primary-300 transition-colors text-sm sm:text-base bg-white">
                             Log in
                         </button>
                     </div>

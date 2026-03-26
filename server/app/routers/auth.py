@@ -9,8 +9,13 @@ from app.config import get_settings
 from app.models.trader import Trader
 from app.schemas.auth import TraderRegister, TraderLogin, TokenResponse, TraderOut
 
+from app.dependencies import get_current_trader
+
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
+@router.get("/me", response_model=TraderOut)
+def get_me(trader: Trader = Depends(get_current_trader)):
+    return trader
 
 def hash_pin(pin: str) -> str:
     # bcrypt requires bytes, returns bytes. we store as string in db.
