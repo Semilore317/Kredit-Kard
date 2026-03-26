@@ -10,12 +10,12 @@ import NewDebtModal from "./NewDebt";
 const statuses = ["ALL", "PENDING", "PAID", "PART PAID", "OVERDUE"];
 
 const Debts = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const { items: debts, status } = useSelector((state: RootState) => state.debts);
 
   useEffect(() => {
@@ -98,17 +98,17 @@ const Debts = () => {
                 <td className="px-6 py-4 font-bold text-slate-900">₦{debt.amount.toLocaleString()}</td>
                 <td className="px-6 py-4"><StatusBadge label={debt.status} /></td>
                 <td className="px-6 py-4 text-slate-500">
-                   {new Date(debt.created_at).toLocaleDateString()}
+                  {new Date(debt.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 text-right">
                   {debt.status === "PENDING" && (
-                     <button 
-                       onClick={(e) => handleCancel(e, debt.id)} 
-                       className="text-red-500 hover:text-red-700 font-medium p-1 transition-colors flex items-center gap-1 justify-end w-full"
-                       title="Cancel Debt"
-                     >
-                       <XCircle className="w-4 h-4" /> Cancel
-                     </button>
+                    <button
+                      onClick={(e) => handleCancel(e, debt.id)}
+                      className="text-red-500 hover:text-red-700 font-medium p-1 transition-colors flex items-center gap-1 justify-end w-full"
+                      title="Cancel Debt"
+                    >
+                      <XCircle className="w-4 h-4" /> Cancel
+                    </button>
                   )}
                 </td>
               </tr>
