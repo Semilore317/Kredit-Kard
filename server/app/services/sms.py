@@ -5,13 +5,13 @@ settings = get_settings()
 
 
 def _format_phone(phone: str) -> str:
-    """Normalise phone to international format (234XXXXXXXXXX)."""
-    phone = phone.strip().replace(" ", "")
-    if phone.startswith("0"):
-        phone = "234" + phone[1:]
-    elif phone.startswith("+"):
-        phone = phone[1:]
-    return phone
+    """Standardize to 234XXXXXXXXXX for Termii API."""
+    cleaned = "".join(filter(str.isdigit, phone))
+    if cleaned.startswith("0") and len(cleaned) == 11:
+        return "234" + cleaned[1:]
+    if cleaned.startswith("234") and len(cleaned) == 13:
+        return cleaned
+    return cleaned # fallback
 
 
 def send_debt_notification(

@@ -11,10 +11,13 @@ class TraderRegister(BaseModel):
     @field_validator("phone")
     @classmethod
     def validate_phone(cls, v: str) -> str:
-        # Accept 080XXXXXXXX or +23480XXXXXXXX
-        cleaned = re.sub(r"\s+", "", v)
-        if not re.match(r"^(\+234|0)[789]\d{9}$", cleaned):
-            raise ValueError("Enter a valid Nigerian phone number")
+        # Standardize to 11-digit Nigerian: 080XXXXXXXX
+        cleaned = re.sub(r"\D", "", v) # remove all non-digits
+        if cleaned.startswith("234") and len(cleaned) == 13:
+            cleaned = "0" + cleaned[3:]
+        
+        if not re.match(r"^0[789][01]\d{8}$", cleaned):
+            raise ValueError("Enter a valid Nigerian phone number (11 digits e.g. 080...)")
         return cleaned
 
     @field_validator("pin")
