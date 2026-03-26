@@ -47,8 +47,7 @@ def _get_access_token() -> str:
         _TOKEN_EXPIRY = time.time() + float(data.get("expires_in", 3600)) - 60
         return _CACHED_TOKEN
     except httpx.HTTPError as e:
-        # Fallback to mock mechanism if credentials fail, so frontend dev isn't blocked locally
-        print(f"[Interswitch] Auth error: {e}. Ensure live keys are active.")
+        print(f"[Interswitch] Auth error: {e}")
         raise HTTPException(status_code=502, detail="Payment gateway authentication failed.")
 
 
