@@ -35,8 +35,9 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
+        "https://kredit-kard.vercel.app",
     ]
-    cors_origin_regex: str | None = r"https://kredit-kard-.*\.vercel\.app"
+    cors_origin_regex: str | None = r"https://kredit-kard.*\.vercel\.app"
 
     # Payment mode: 'live' uses real Interswitch API, 'mock' returns fake data (safe for demos)
     payment_mode: str = "mock"
