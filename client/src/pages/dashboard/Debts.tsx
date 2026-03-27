@@ -109,7 +109,14 @@ const Debts = () => {
                   <p className="font-semibold text-slate-900">{debt.customer.name}</p>
                   <p className="text-slate-400 text-xs mt-0.5">{debt.customer.phone}</p>
                 </td>
-                <td className="px-6 py-4 font-bold text-slate-900">₦{debt.amount.toLocaleString()}</td>
+                <td className="px-6 py-4 font-bold text-slate-900">
+                  ₦{debt.amount.toLocaleString()}
+                  {debt.status === "PART PAID" && (
+                    <div className="text-[10px] text-brand-primary-600 font-semibold mt-0.5">
+                      Paid: ₦{debt.total_paid.toLocaleString()}
+                    </div>
+                  )}
+                </td>
                 <td className="px-6 py-4"><StatusBadge label={debt.status} /></td>
                 <td className="px-6 py-4 text-slate-500">
                   {new Date((debt as any).due_date || debt.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}

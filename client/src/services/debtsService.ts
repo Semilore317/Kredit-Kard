@@ -10,9 +10,10 @@ export interface CreateDebtPayload {
 export interface Debt {
   id: number;
   amount: number;
+  total_paid: number;
   description: string;
   payment_ref: string;
-  status: 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+  status: 'PENDING' | 'PAID' | 'PART PAID' | 'OVERDUE' | 'CANCELLED';
   created_at: string;
   due_date: string;
   customer: {

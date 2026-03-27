@@ -36,12 +36,21 @@ def send_payment_confirmation(
     trader_phone: str,
     customer_name: str,
     amount: float,
+    is_partial: bool = False,
+    remaining: float = 0.0,
 ) -> bool:
-    """Notify the trader that a customer has paid."""
-    message = (
-        f"Payment received! {customer_name} just paid N{amount:,.0f}. "
-        f"Your KreditKard ledger has been updated."
-    )
+    """Notify the trader that a customer has paid (fully or partially)."""
+    if is_partial:
+        message = (
+            f"Partial payment received! {customer_name} just paid N{amount:,.0f}. "
+            f"Remaining balance: N{remaining:,.0f}. "
+            f"Your KreditKard ledger has been updated."
+        )
+    else:
+        message = (
+            f"Payment received! {customer_name} just paid N{amount:,.0f}. "
+            f"Debt cleared. Your KreditKard ledger has been updated."
+        )
     return _send(trader_phone, message)
 
 

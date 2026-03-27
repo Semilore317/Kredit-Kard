@@ -8,6 +8,7 @@ from app.database import Base
 class DebtStatus(str, enum.Enum):
     PENDING = "PENDING"
     PAID = "PAID"
+    PART_PAID = "PART PAID"
     CANCELLED = "CANCELLED"
 
 
@@ -19,6 +20,7 @@ class Debt(Base):
     customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"), index=True)
 
     amount: Mapped[float] = mapped_column(Numeric(12, 2))
+    total_paid: Mapped[float] = mapped_column(Numeric(12, 2), default=0.0)
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[DebtStatus] = mapped_column(
         Enum(DebtStatus), default=DebtStatus.PENDING, index=True

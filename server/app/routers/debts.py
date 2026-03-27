@@ -60,6 +60,7 @@ def _debt_to_out(debt: Debt) -> dict:
             "phone": debt.customer.phone,
         },
         "amount": float(debt.amount),
+        "total_paid": float(debt.total_paid or 0),
         "description": debt.description,
         "status": debt.status.value,
         "payment_ref": debt.payment_ref,
@@ -135,6 +136,7 @@ def list_debts(
                 "phone": d.customer.phone,
             },
             "amount": float(d.amount),
+            "total_paid": float(d.total_paid or 0),
             "status": d.status.value,
             "ussd_string": d.ussd_string,
             "created_at": d.created_at,
@@ -199,6 +201,7 @@ def simulate_payment(
         return _debt_to_out(debt)
 
     debt.status = DebtStatus.PAID
+    debt.total_paid = debt.amount  # Mark as fully paid
     debt.paid_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(debt)

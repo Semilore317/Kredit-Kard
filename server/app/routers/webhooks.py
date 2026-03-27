@@ -63,34 +63,49 @@ async def interswitch_webhook(
         # Return 200 so Interswitch doesn't retry — we just don't know this ref
         return {"status": "ignored", "reason": "unknown payment_ref"}
 
-    if debt.status == DebtStatus.PAID:
-        return {"status": "already_paid"}
+    # Interswitch sends amount in kobo
+    amount_paid_kobo = payload.get("amount") or 0
+    amount_paid_naira = float(amount_paid_kobo) / 100.0
 
-    # Capture relationship data BEFORE the atomic update
+    # Ensure we have the latest data from DB (important for concurrent/repeated webhooks in tests)
+    db.refresh(debt)
+    
+    # Capture relationship data BEFORE the update
     trader_phone = debt.trader.phone
     customer_name = debt.customer.name
-    amount = float(debt.amount)
+    total_amount = float(debt.amount)
+    current_paid = float(debt.total_paid or 0)
     debt_id = debt.id
 
-    # Atomic idempotency guard: only transition PENDING → PAID
-    # If another concurrent webhook already flipped the status, rowcount == 0
+    new_total_paid = current_paid + amount_paid_naira
+    is_fully_paid = new_total_paid >= total_amount
+    new_status = DebtStatus.PAID if is_fully_paid else DebtStatus.PART_PAID
+    paid_at = datetime.now(timezone.utc) if is_fully_paid else None
+
+    # Update the debt record
     result = db.execute(
         update(Debt)
-        .where(Debt.payment_ref == payment_ref, Debt.status == DebtStatus.PENDING)
-        .values(status=DebtStatus.PAID, paid_at=datetime.now(timezone.utc))
+        .where(Debt.id == debt_id, Debt.status != DebtStatus.PAID)
+        .values(
+            total_paid=new_total_paid,
+            status=new_status,
+            paid_at=paid_at
+        )
     )
     db.commit()
 
     if result.rowcount == 0:
-        # Another concurrent request already processed this payment
-        return {"status": "already_paid"}
+        # Debt was already PAID or status mismatch
+        return {"status": "already_processed"}
 
-    # Notify trader (non-fatal — SMS failure must not crash the webhook)
+    # Notify trader
     try:
         sms.send_payment_confirmation(
             trader_phone=trader_phone,
             customer_name=customer_name,
-            amount=amount,
+            amount=amount_paid_naira,
+            is_partial=not is_fully_paid,
+            remaining=max(0, total_amount - new_total_paid)
         )
     except Exception:
         print(f"[Webhook] SMS notification failed for debt {debt_id}")

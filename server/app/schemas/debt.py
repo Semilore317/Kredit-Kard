@@ -38,6 +38,7 @@ class DebtOut(BaseModel):
     id: int
     customer: CustomerNested
     amount: float
+    total_paid: float
     description: str | None
     status: str
     payment_ref: str | None
@@ -53,6 +54,7 @@ class DebtListOut(BaseModel):
     id: int
     customer: CustomerNested
     amount: float
+    total_paid: float
     status: str
     ussd_string: str | None
     created_at: datetime
