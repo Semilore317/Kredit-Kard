@@ -33,4 +33,4 @@ app.include_router(analytics.router)
 
 @app.get("/health", tags=["Health"])
 def health_check():
-    return {"status": "ok", "version": "1.0.0", "app": settings.app_name}
+    return {"status": "ok", "version": "1.0.0", "app": settings.app_name, "payment_mode": settings.payment_mode}
