@@ -94,11 +94,13 @@ const Transactions = () => {
                 <td className="px-6 py-4 text-slate-500">{t.date}</td>
               </tr>
             ))}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={6} className="text-center py-12 text-slate-400">No transactions found.</td>
-              </tr>
-            )}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-slate-400">
+                    {loading ? "Loading transactions..." : "No transactions found."}
+                  </td>
+                </tr>
+              )}
           </tbody>
         </table>
       </div>
