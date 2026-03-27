@@ -42,12 +42,22 @@ const DashboardHome = () => {
   const overdueCount = useMemo(() => debts.filter(d => d.status === "OVERDUE").length, [debts]);
   const paidCount = useMemo(() => debts.filter(d => d.status === "PAID").length, [debts]);
   const pendingCount = useMemo(() => debts.filter(d => d.status === "PENDING").length, [debts]);
+  const partPaidCount = useMemo(() => debts.filter(d => d.status === "PART PAID").length, [debts]);
+
+  /** Sum of total_paid for debts fully paid within the current ISO week */
+  const collectedThisWeek = useMemo(() => {
+    const weekStart = getWeekStart(new Date());
+    return debts
+      .filter(d => d.paid_at && new Date(d.paid_at) >= weekStart)
+      .reduce((sum, d) => sum + (d.total_paid ?? 0), 0);
+  }, [debts]);
 
   const debtStatusData = useMemo(() => [
     { name: "Paid", value: paidCount, color: "#10b981" },
+    { name: "Part Paid", value: partPaidCount, color: "#6366f1" },
     { name: "Pending", value: pendingCount, color: "#f59e0b" },
     { name: "Overdue", value: overdueCount, color: "#ef4444" },
-  ].filter(d => d.value > 0), [paidCount, pendingCount, overdueCount]);
+  ].filter(d => d.value > 0), [paidCount, partPaidCount, pendingCount, overdueCount]);
 
   /** Group debts by week-start, sum amounts per week, sort chronologically */
   const collectionsOverTime = useMemo(() => {
@@ -76,7 +86,7 @@ const DashboardHome = () => {
       <h1 className="text-3xl font-extrabold text-slate-900">Dashboard</h1>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           label="Total Outstanding"
           value={`₦${totalOutstanding.toLocaleString()}`}
@@ -84,13 +94,8 @@ const DashboardHome = () => {
         />
         <StatCard
           label="Collected This Week"
-          value="₦0"
+          value={`₦${collectedThisWeek.toLocaleString()}`}
           icon={<span className="text-green-500">↗</span>}
-        />
-        <StatCard
-          label="Overdue Debts"
-          value={String(overdueCount)}
-          icon={<span className="text-brand-primary-400">⚠</span>}
         />
         <StatCard
           label="Active Customers"

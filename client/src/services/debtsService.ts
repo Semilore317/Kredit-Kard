@@ -16,6 +16,7 @@ export interface Debt {
   status: 'PENDING' | 'PAID' | 'PART PAID' | 'OVERDUE' | 'CANCELLED';
   created_at: string;
   due_date: string;
+  paid_at?: string | null;
   customer: {
     id: number;
     name: string;
