@@ -4,8 +4,9 @@ import StatusBadge from "../../components/dashboard/StatusBadge";
 import { useDispatch, useSelector } from "react-redux";
 import { type AppDispatch, type RootState } from "../../store/store";
 import { fetchDebts, cancelDebt } from "../../store/slices/debtsSlice";
-import { debtsService } from "../../services/debtsService";
+import type { Debt } from "../../services/debtsService";
 import NewDebtModal from "./NewDebt";
+import SimulatePaymentModal from "../../components/dashboard/SimulatePaymentModal";
 
 const statuses = ["ALL", "PENDING", "PAID", "PART PAID", "OVERDUE"];
 
@@ -14,10 +15,9 @@ const Debts = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [simulatingId, setSimulatingId] = useState<number | null>(null);
+  const [simulateDebt, setSimulateDebt] = useState<Debt | null>(null);
 
   const { items: debts, status } = useSelector((state: RootState) => state.debts);
-  const isMockMode = useSelector((state: RootState) => state.app.isMockMode);
 
   useEffect(() => {
     if (status === 'idle') {
@@ -29,19 +29,6 @@ const Debts = () => {
     e.stopPropagation();
     if (window.confirm("Are you sure you want to cancel this debt?")) {
       dispatch(cancelDebt(id));
-    }
-  };
-
-  const handleSimulate = async (e: React.MouseEvent, id: number) => {
-    e.stopPropagation();
-    setSimulatingId(id);
-    try {
-      await debtsService.simulatePayment(id);
-      dispatch(fetchDebts());
-    } catch {
-      alert("Simulation failed. Please try again.");
-    } finally {
-      setSimulatingId(null);
     }
   };
 
@@ -122,19 +109,17 @@ const Debts = () => {
                   {new Date((debt as any).due_date || debt.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </td>
                 <td className="px-6 py-4 text-right">
-                  {debt.status === "PENDING" && (
-                    <div className="flex items-center justify-end gap-2">
-                      {isMockMode && (
-                        <button
-                          onClick={(e) => handleSimulate(e, debt.id)}
-                          disabled={simulatingId === debt.id}
-                          className="text-emerald-600 hover:text-emerald-800 font-medium p-1 transition-colors flex items-center gap-1 disabled:opacity-50"
-                          title="Simulate Payment"
-                        >
-                          <Zap className="w-4 h-4" />
-                          {simulatingId === debt.id ? "..." : "Simulate"}
-                        </button>
-                      )}
+                  <div className="flex items-center justify-end gap-2">
+                    {(debt.status === "PENDING" || debt.status === "PART PAID" || debt.status === "OVERDUE") && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSimulateDebt(debt); }}
+                        className="text-emerald-600 hover:text-emerald-800 font-medium p-1 transition-colors flex items-center gap-1"
+                        title="Simulate Payment"
+                      >
+                        <Zap className="w-4 h-4" /> Simulate
+                      </button>
+                    )}
+                    {debt.status === "PENDING" && (
                       <button
                         onClick={(e) => handleCancel(e, debt.id)}
                         className="text-red-500 hover:text-red-700 font-medium p-1 transition-colors flex items-center gap-1"
@@ -142,8 +127,8 @@ const Debts = () => {
                       >
                         <XCircle className="w-4 h-4" /> Cancel
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -177,24 +162,22 @@ const Debts = () => {
               </p>
             </div>
 
-            {debt.status === "PENDING" && (
+            {(debt.status === "PENDING" || debt.status === "PART PAID" || debt.status === "OVERDUE") && (
               <div className="mt-2 pt-3 border-t border-slate-50 flex justify-end gap-3">
-                {isMockMode && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setSimulateDebt(debt); }}
+                  className="text-emerald-600 hover:text-emerald-800 font-medium text-sm transition-colors flex items-center gap-1"
+                >
+                  <Zap className="w-4 h-4" /> Simulate Payment
+                </button>
+                {debt.status === "PENDING" && (
                   <button
-                    onClick={(e) => handleSimulate(e, debt.id)}
-                    disabled={simulatingId === debt.id}
-                    className="text-emerald-600 hover:text-emerald-800 font-medium text-sm transition-colors flex items-center gap-1 disabled:opacity-50"
+                    onClick={(e) => handleCancel(e, debt.id)}
+                    className="text-red-500 hover:text-red-700 font-medium text-sm transition-colors flex items-center gap-1"
                   >
-                    <Zap className="w-4 h-4" />
-                    {simulatingId === debt.id ? "Simulating..." : "Simulate Payment"}
+                    <XCircle className="w-4 h-4" /> Cancel
                   </button>
                 )}
-                <button
-                  onClick={(e) => handleCancel(e, debt.id)}
-                  className="text-red-500 hover:text-red-700 font-medium text-sm transition-colors flex items-center gap-1"
-                >
-                  <XCircle className="w-4 h-4" /> Cancel Debt
-                </button>
               </div>
             )}
           </div>
@@ -207,6 +190,13 @@ const Debts = () => {
       </div>
 
       <NewDebtModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      {simulateDebt && (
+        <SimulatePaymentModal
+          debt={simulateDebt}
+          onClose={() => setSimulateDebt(null)}
+          onSuccess={() => dispatch(fetchDebts())}
+        />
+      )}
     </div>
   );
 };

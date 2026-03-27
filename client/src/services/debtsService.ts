@@ -46,8 +46,11 @@ export const debtsService = {
     return response.data;
   },
 
-  simulatePayment: async (debtId: number): Promise<Debt> => {
-    const response = await apiClient.post<Debt>(`/debts/${debtId}/test-payment`);
+  simulatePayment: async (paymentRef: string, amountNaira: number): Promise<{ status: string; debt_id?: number }> => {
+    const response = await apiClient.post('/demo/simulate-payment', {
+      payment_ref: paymentRef,
+      amount: amountNaira,
+    });
     return response.data;
   },
 };
