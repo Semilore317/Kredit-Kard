@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import auth, debts, customers, webhooks, analytics, demo
+from app.routers import auth, debts, customers, webhooks, analytics, demo, transactions
 
 settings = get_settings()
 
@@ -30,6 +30,7 @@ app.include_router(customers.router)
 app.include_router(webhooks.router)
 app.include_router(analytics.router)
 app.include_router(demo.router)
+app.include_router(transactions.router)
 
 
 @app.get("/health", tags=["Health"])

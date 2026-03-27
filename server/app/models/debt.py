@@ -41,3 +41,4 @@ class Debt(Base):
     # Relationships
     trader: Mapped["Trader"] = relationship(back_populates="debts")
     customer: Mapped["Customer"] = relationship(back_populates="debts")
+    transactions: Mapped[list["Transaction"]] = relationship(back_populates="debt")
