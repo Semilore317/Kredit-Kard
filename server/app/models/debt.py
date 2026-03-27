@@ -23,7 +23,9 @@ class Debt(Base):
     total_paid: Mapped[float] = mapped_column(Numeric(12, 2), default=0.0)
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[DebtStatus] = mapped_column(
-        Enum(DebtStatus), default=DebtStatus.PENDING, index=True
+        Enum(DebtStatus, name="debtstatus", native_enum=True, values_callable=lambda obj: [e.value for e in obj]), 
+        default=DebtStatus.PENDING, 
+        index=True
     )
 
     # Interswitch payment details
