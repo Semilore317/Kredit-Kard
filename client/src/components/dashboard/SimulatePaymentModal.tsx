@@ -38,7 +38,14 @@ const SimulatePaymentModal = ({ debt, onClose, onSuccess }: SimulatePaymentModal
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err?.response?.data?.detail || "Simulation failed. Please try again.");
+      const errorData = err?.response?.data?.detail;
+      if (typeof errorData === 'string') {
+        setError(errorData);
+      } else if (Array.isArray(errorData)) {
+        setError(errorData[0]?.msg || "Invalid input. Please check the amount.");
+      } else {
+        setError("Simulation failed. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
