@@ -4,16 +4,16 @@ import {
   CreditCard,
   Users,
   ArrowLeftRight,
-  MessageSquare,
 } from "lucide-react";
+
 
 const navItems = [
   { to: "/app", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/app/debts", label: "Debts", icon: CreditCard },
   { to: "/app/customers", label: "Customers", icon: Users },
   { to: "/app/transactions", label: "Transactions", icon: ArrowLeftRight },
-  { to: "/app/messages", label: "Messages", icon: MessageSquare },
 ];
+
 
 const Sidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) => {
   return (

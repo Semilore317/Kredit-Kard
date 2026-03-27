@@ -6,7 +6,7 @@ import DashboardHome from "./pages/dashboard/DashboardHome"
 import Debts from "./pages/dashboard/Debts"
 import Customers from "./pages/dashboard/Customers"
 import Transactions from "./pages/dashboard/Transactions"
-import Messages from "./pages/dashboard/Messages"
+
 
 function App() {
 
@@ -24,7 +24,7 @@ function App() {
         <Route path="debts" element={<Debts />} />
         <Route path="customers" element={<Customers />} />
         <Route path="transactions" element={<Transactions />} />
-        <Route path="messages" element={<Messages />} />
+
 
       </Route>
 

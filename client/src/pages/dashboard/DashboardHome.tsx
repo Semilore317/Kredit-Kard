@@ -44,11 +44,17 @@ const DashboardHome = () => {
   const pendingCount = useMemo(() => debts.filter(d => d.status === "PENDING").length, [debts]);
   const partPaidCount = useMemo(() => debts.filter(d => d.status === "PART PAID").length, [debts]);
 
-  /** Sum of total_paid for debts fully paid within the current ISO week */
+  /** Sum of total_paid for debts paid (fully or partially) within the current ISO week */
   const collectedThisWeek = useMemo(() => {
     const weekStart = getWeekStart(new Date());
     return debts
-      .filter(d => d.paid_at && new Date(d.paid_at) >= weekStart)
+      .filter(d => {
+        if ((d.total_paid ?? 0) <= 0) return false;
+        // PAID debts: use the actual paid_at timestamp
+        // PART PAID debts: paid_at is null — fall back to created_at as best approximation
+        const relevantDate = d.paid_at ? new Date(d.paid_at) : new Date(d.created_at);
+        return relevantDate >= weekStart;
+      })
       .reduce((sum, d) => sum + (d.total_paid ?? 0), 0);
   }, [debts]);
 
