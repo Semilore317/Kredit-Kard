@@ -14,13 +14,27 @@ const navItems = [
   { to: "/app/customers", label: "Customers", icon: Users },
   { to: "/app/transactions", label: "Transactions", icon: ArrowLeftRight },
   { to: "/app/messages", label: "Messages", icon: MessageSquare },
-  { to: "/app/settings", label: "Settings", icon: Settings },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) => {
   return (
-    <aside className="w-64 min-h-screen bg-[#f5f6f7] flex flex-col border-r border-slate-200 shrink-0">
-      {/* Logo */}
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-40 md:hidden transition-opacity" 
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside 
+        className={`fixed md:relative top-0 left-0 z-50 h-[100dvh] md:h-screen w-[80vw] sm:w-[350px] md:w-64 bg-white md:bg-[#f5f6f7] flex flex-col border-r border-slate-200 shrink-0 transition-transform duration-300 ease-in-out overflow-y-auto ${
+          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
+        {/* Logo */}
       <div className="flex items-center gap-2 px-6 py-5 border-b border-slate-200">
         <CreditCard className="w-5 h-5 text-brand-primary-500" />
         <span className="text-xl font-extrabold">
@@ -54,7 +68,8 @@ const Sidebar = () => {
           </NavLink>
         ))}
       </nav>
-    </aside>
+      </aside>
+    </>
   );
 };
 

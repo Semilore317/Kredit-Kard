@@ -7,7 +7,6 @@ import Debts from "./pages/dashboard/Debts"
 import Customers from "./pages/dashboard/Customers"
 import Transactions from "./pages/dashboard/Transactions"
 import Messages from "./pages/dashboard/Messages"
-import Settings from "./pages/dashboard/Settings"
 
 function App() {
 
@@ -26,7 +25,7 @@ function App() {
         <Route path="customers" element={<Customers />} />
         <Route path="transactions" element={<Transactions />} />
         <Route path="messages" element={<Messages />} />
-        <Route path="settings" element={<Settings />} />
+
       </Route>
 
       <Route path="*" element={<Navigate to="/landing" replace />} />

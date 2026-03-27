@@ -76,15 +76,15 @@ const Debts = () => {
         </select>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/50">
               <th className="text-left px-6 py-4 text-slate-500 font-medium">Customer</th>
               <th className="text-left px-6 py-4 text-slate-500 font-medium">Amount</th>
               <th className="text-left px-6 py-4 text-slate-500 font-medium">Status</th>
-              <th className="text-left px-6 py-4 text-slate-500 font-medium">Created</th>
+              <th className="text-left px-6 py-4 text-slate-500 font-medium">Due Date</th>
               <th className="text-right px-6 py-4 text-slate-500 font-medium">Actions</th>
             </tr>
           </thead>
@@ -98,7 +98,7 @@ const Debts = () => {
                 <td className="px-6 py-4 font-bold text-slate-900">₦{debt.amount.toLocaleString()}</td>
                 <td className="px-6 py-4"><StatusBadge label={debt.status} /></td>
                 <td className="px-6 py-4 text-slate-500">
-                  {new Date(debt.created_at).toLocaleDateString()}
+                  {new Date((debt as any).due_date || debt.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </td>
                 <td className="px-6 py-4 text-right">
                   {debt.status === "PENDING" && (
@@ -122,6 +122,44 @@ const Debts = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden flex flex-col gap-4">
+        {filtered.map((debt) => (
+          <div key={debt.id} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 flex flex-col gap-3">
+            <div className="flex justify-between items-start gap-2">
+              <div>
+                <p className="font-semibold text-slate-900 text-base">{debt.customer.name}</p>
+                <p className="text-slate-400 text-xs mt-0.5">{debt.customer.phone}</p>
+              </div>
+              <StatusBadge label={debt.status} />
+            </div>
+            
+            <div className="flex justify-between items-end mt-1">
+              <p className="font-bold text-slate-900 text-base">₦{debt.amount.toLocaleString()}</p>
+              <p className="text-slate-500 text-sm">
+                Due: {new Date((debt as any).due_date || debt.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            </div>
+
+            {debt.status === "PENDING" && (
+              <div className="mt-2 pt-3 border-t border-slate-50 flex justify-end">
+                <button
+                  onClick={(e) => handleCancel(e, debt.id)}
+                  className="text-red-500 hover:text-red-700 font-medium text-sm transition-colors flex items-center gap-1"
+                >
+                  <XCircle className="w-4 h-4" /> Cancel Debt
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+        {filtered.length === 0 && (
+          <div className="text-center py-12 text-slate-400 bg-white rounded-xl border border-slate-100">
+            {status === 'loading' ? 'Loading debts...' : 'No debts found.'}
+          </div>
+        )}
       </div>
 
       <NewDebtModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />

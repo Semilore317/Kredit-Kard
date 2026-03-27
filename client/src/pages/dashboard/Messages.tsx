@@ -28,7 +28,7 @@ const Messages = () => {
         phone: c?.phone || "",
         message: `Automated ${template} message sent via KreditKard.`,
         status: "SENT",
-        date: new Date().toLocaleDateString()
+        date: `${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}, ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
       };
     });
 
@@ -51,8 +51,8 @@ const Messages = () => {
         </button>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/50">
@@ -83,6 +83,36 @@ const Messages = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden flex flex-col gap-4">
+        {messages.map((m) => (
+          <div key={m.id} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 flex flex-col gap-3">
+            <div className="flex justify-between items-start gap-2">
+              <div>
+                <p className="font-semibold text-slate-900 text-base">{m.to}</p>
+                <p className="text-slate-400 text-xs mt-0.5">{m.phone}</p>
+              </div>
+              <StatusBadge label={m.status} />
+            </div>
+            
+            <p className="text-slate-500 text-sm line-clamp-2 leading-relaxed">
+              {m.message}
+            </p>
+
+            <div className="mt-1 flex items-center justify-between">
+              <p className="text-slate-400 text-xs">
+                {m.date}
+              </p>
+            </div>
+          </div>
+        ))}
+        {messages.length === 0 && (
+          <div className="text-center py-12 text-slate-400 bg-white rounded-xl border border-slate-100">
+            No message history yet.
+          </div>
+        )}
       </div>
 
       {/* Compose Modal */}
