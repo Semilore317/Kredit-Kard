@@ -15,6 +15,8 @@ from app.config import get_settings
 from app.services.interswitch import create_virtual_account as _live_create_va
 from app.services import sms
 
+settings = get_settings()
+
 router = APIRouter(prefix="/debts", tags=["Debts"])
 
 
