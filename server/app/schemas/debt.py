@@ -61,3 +61,8 @@ class DebtListOut(BaseModel):
     paid_at: datetime | None
 
     model_config = {"from_attributes": True}
+
+
+class SimulationRequest(BaseModel):
+    payment_ref: str
+    amount: float
