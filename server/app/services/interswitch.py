@@ -40,9 +40,10 @@ def _get_access_token() -> str:
     token_url = f"{settings.interswitch_base_url}/passport/oauth/token"
     last_error = None
     
-    for attempt in range(3):
+    for attempt in range(2): # reduced to 2 attempts
         try:
-            response = httpx.post(token_url, data=payload, headers=headers, timeout=30.0)
+            # Short timeout for auth, it's usually fast or dead
+            response = httpx.post(token_url, data=payload, headers=headers, timeout=8.0)
             response.raise_for_status()
             data = response.json()
             _CACHED_TOKEN = data["access_token"]
@@ -52,10 +53,10 @@ def _get_access_token() -> str:
         except httpx.HTTPError as e:
             last_error = e
             print(f"[Interswitch] Auth attempt {attempt + 1} failed: {e}")
-            if attempt < 2:
-                time.sleep(2 ** attempt)  # simple exponential backoff
+            if attempt < 1:
+                time.sleep(1)
 
-    print(f"[Interswitch] Auth error after 3 attempts: {last_error}")
+    print(f"[Interswitch] Auth error after 2 attempts: {last_error}")
     raise HTTPException(status_code=502, detail="Payment gateway authentication failed.")
 
 
@@ -117,7 +118,7 @@ def create_virtual_account(
             full_url,
             json=payload,
             headers=headers,
-            timeout=30.0,
+            timeout=15.0,
         )
         response.raise_for_status()
         data = response.json()
