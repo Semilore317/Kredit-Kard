@@ -43,5 +43,10 @@ export const debtsService = {
   cancelDebt: async (id: number): Promise<Debt> => {
     const response = await apiClient.patch<Debt>(`/debts/${id}/cancel`);
     return response.data;
-  }
+  },
+
+  simulatePayment: async (debtId: number): Promise<Debt> => {
+    const response = await apiClient.post<Debt>(`/debts/${debtId}/test-payment`);
+    return response.data;
+  },
 };

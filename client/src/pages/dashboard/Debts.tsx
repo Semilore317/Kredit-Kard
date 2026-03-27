@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, XCircle } from "lucide-react";
+import { Plus, Search, XCircle, Zap } from "lucide-react";
 import StatusBadge from "../../components/dashboard/StatusBadge";
 import { useDispatch, useSelector } from "react-redux";
 import { type AppDispatch, type RootState } from "../../store/store";
 import { fetchDebts, cancelDebt } from "../../store/slices/debtsSlice";
+import { debtsService } from "../../services/debtsService";
 import NewDebtModal from "./NewDebt";
 
 const statuses = ["ALL", "PENDING", "PAID", "PART PAID", "OVERDUE"];
@@ -13,8 +14,10 @@ const Debts = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [simulatingId, setSimulatingId] = useState<number | null>(null);
 
   const { items: debts, status } = useSelector((state: RootState) => state.debts);
+  const isMockMode = useSelector((state: RootState) => state.app.isMockMode);
 
   useEffect(() => {
     if (status === 'idle') {
@@ -26,6 +29,19 @@ const Debts = () => {
     e.stopPropagation();
     if (window.confirm("Are you sure you want to cancel this debt?")) {
       dispatch(cancelDebt(id));
+    }
+  };
+
+  const handleSimulate = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    setSimulatingId(id);
+    try {
+      await debtsService.simulatePayment(id);
+      dispatch(fetchDebts());
+    } catch {
+      alert("Simulation failed. Please try again.");
+    } finally {
+      setSimulatingId(null);
     }
   };
 
@@ -100,13 +116,26 @@ const Debts = () => {
                 </td>
                 <td className="px-6 py-4 text-right">
                   {debt.status === "PENDING" && (
-                    <button
-                      onClick={(e) => handleCancel(e, debt.id)}
-                      className="text-red-500 hover:text-red-700 font-medium p-1 transition-colors flex items-center gap-1 justify-end w-full"
-                      title="Cancel Debt"
-                    >
-                      <XCircle className="w-4 h-4" /> Cancel
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      {isMockMode && (
+                        <button
+                          onClick={(e) => handleSimulate(e, debt.id)}
+                          disabled={simulatingId === debt.id}
+                          className="text-emerald-600 hover:text-emerald-800 font-medium p-1 transition-colors flex items-center gap-1 disabled:opacity-50"
+                          title="Simulate Payment"
+                        >
+                          <Zap className="w-4 h-4" />
+                          {simulatingId === debt.id ? "..." : "Simulate"}
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => handleCancel(e, debt.id)}
+                        className="text-red-500 hover:text-red-700 font-medium p-1 transition-colors flex items-center gap-1"
+                        title="Cancel Debt"
+                      >
+                        <XCircle className="w-4 h-4" /> Cancel
+                      </button>
+                    </div>
                   )}
                 </td>
               </tr>
@@ -142,7 +171,17 @@ const Debts = () => {
             </div>
 
             {debt.status === "PENDING" && (
-              <div className="mt-2 pt-3 border-t border-slate-50 flex justify-end">
+              <div className="mt-2 pt-3 border-t border-slate-50 flex justify-end gap-3">
+                {isMockMode && (
+                  <button
+                    onClick={(e) => handleSimulate(e, debt.id)}
+                    disabled={simulatingId === debt.id}
+                    className="text-emerald-600 hover:text-emerald-800 font-medium text-sm transition-colors flex items-center gap-1 disabled:opacity-50"
+                  >
+                    <Zap className="w-4 h-4" />
+                    {simulatingId === debt.id ? "Simulating..." : "Simulate Payment"}
+                  </button>
+                )}
                 <button
                   onClick={(e) => handleCancel(e, debt.id)}
                   className="text-red-500 hover:text-red-700 font-medium text-sm transition-colors flex items-center gap-1"

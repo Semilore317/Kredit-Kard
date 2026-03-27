@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../store/store";
 import { fetchCurrentUser } from "../../store/slices/authSlice";
+import { fetchHealth } from "../../store/slices/appSlice";
 import Sidebar from "./Sidebar";
 import DashboardHeader from "./DashboardHeader";
 
@@ -13,6 +14,7 @@ const DashboardLayout = () => {
 
   useEffect(() => {
     dispatch(fetchCurrentUser());
+    dispatch(fetchHealth());
   }, [dispatch]);
 
   // Close the mobile menu automatically when the route changes
