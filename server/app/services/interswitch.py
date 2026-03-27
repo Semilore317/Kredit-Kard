@@ -38,17 +38,25 @@ def _get_access_token() -> str:
     payload = {"grant_type": "client_credentials"}
 
     token_url = f"{settings.interswitch_base_url}/passport/oauth/token"
-    try:
-        response = httpx.post(token_url, data=payload, headers=headers, timeout=10.0)
-        response.raise_for_status()
-        data = response.json()
-        _CACHED_TOKEN = data["access_token"]
-        # expire 60s early for safety
-        _TOKEN_EXPIRY = time.time() + float(data.get("expires_in", 3600)) - 60
-        return _CACHED_TOKEN
-    except httpx.HTTPError as e:
-        print(f"[Interswitch] Auth error: {e}")
-        raise HTTPException(status_code=502, detail="Payment gateway authentication failed.")
+    last_error = None
+    
+    for attempt in range(3):
+        try:
+            response = httpx.post(token_url, data=payload, headers=headers, timeout=30.0)
+            response.raise_for_status()
+            data = response.json()
+            _CACHED_TOKEN = data["access_token"]
+            # expire 60s early for safety
+            _TOKEN_EXPIRY = time.time() + float(data.get("expires_in", 3600)) - 60
+            return _CACHED_TOKEN
+        except httpx.HTTPError as e:
+            last_error = e
+            print(f"[Interswitch] Auth attempt {attempt + 1} failed: {e}")
+            if attempt < 2:
+                time.sleep(2 ** attempt)  # simple exponential backoff
+
+    print(f"[Interswitch] Auth error after 3 attempts: {last_error}")
+    raise HTTPException(status_code=502, detail="Payment gateway authentication failed.")
 
 
 def _generate_signature(http_method: str, url: str, timestamp: str, nonce: str) -> str:
@@ -109,7 +117,7 @@ def create_virtual_account(
             full_url,
             json=payload,
             headers=headers,
-            timeout=10.0,
+            timeout=30.0,
         )
         response.raise_for_status()
         data = response.json()

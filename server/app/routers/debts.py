@@ -13,14 +13,24 @@ from app.schemas.debt import DebtCreate, DebtOut, DebtListOut
 
 from app.config import get_settings
 from app.services.interswitch import create_virtual_account as _live_create_va
-from app.services.interswitch import create_virtual_account as _live_create_va
 from app.services import sms
 
 router = APIRouter(prefix="/debts", tags=["Debts"])
 
 
 def _create_virtual_account(payment_ref: str, amount: float, customer_name: str) -> dict:
-    """Dispatch to live Interswitch API."""
+    """Dispatch to live Interswitch API or return mock data."""
+    if settings.payment_mode == "mock":
+        # Simulate a successful Interswitch response for demos/testing
+        # Quickteller format: 10-digit virtual account number
+        import random
+        mock_va = "".join([str(random.randint(0, 9)) for _ in range(10)])
+        return {
+            "virtual_account_no": mock_va,
+            "ussd_string": f"*322*{round(amount)}*{mock_va}#",
+            "payment_ref": payment_ref,
+        }
+    
     return _live_create_va(payment_ref, amount, customer_name)
 
 
