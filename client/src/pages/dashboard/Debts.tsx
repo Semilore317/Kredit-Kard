@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-// import { useNavigate } from "react-router";
 import { Plus, Search, XCircle } from "lucide-react";
 import StatusBadge from "../../components/dashboard/StatusBadge";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,7 +9,6 @@ import NewDebtModal from "./NewDebt";
 const statuses = ["ALL", "PENDING", "PAID", "PART PAID", "OVERDUE"];
 
 const Debts = () => {
-  // const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");

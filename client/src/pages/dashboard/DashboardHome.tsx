@@ -4,23 +4,22 @@ import {
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 import StatCard from "../../components/dashboard/StatCard";
-const collectionsOverTime = [
-  { date: "Jan 1", amount: 14000 },
-  { date: "Jan 8", amount: 19500 },
-  { date: "Jan 15", amount: 19500 },
-  { date: "Jan 22", amount: 25500 },
-  { date: "Jan 29", amount: 19000 },
-  { date: "Feb 5", amount: 14000 },
-  { date: "Feb 8", amount: 17000 },
-  { date: "Feb 10", amount: 14000 },
-  { date: "Feb 12", amount: 14000 },
-  { date: "Feb 14", amount: 8000 },
-  { date: "Feb 16", amount: 5500 },
-];
 import { useDispatch, useSelector } from "react-redux";
 import { type AppDispatch, type RootState } from "../../store/store";
 import { fetchDebts } from "../../store/slices/debtsSlice";
 import { fetchCustomers } from "../../store/slices/customersSlice";
+
+/** Returns the Monday of the ISO week containing `date` */
+function getWeekStart(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay(); // 0 = Sun
+  const diff = (day === 0 ? -6 : 1) - day; // shift to Monday
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+const MONTH_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 const DashboardHome = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -49,6 +48,28 @@ const DashboardHome = () => {
     { name: "Pending", value: pendingCount, color: "#f59e0b" },
     { name: "Overdue", value: overdueCount, color: "#ef4444" },
   ].filter(d => d.value > 0), [paidCount, pendingCount, overdueCount]);
+
+  /** Group debts by week-start, sum amounts per week, sort chronologically */
+  const collectionsOverTime = useMemo(() => {
+    const buckets = new Map<string, { ts: number; amount: number }>();
+    for (const debt of debts) {
+      const weekStart = getWeekStart(new Date(debt.created_at));
+      const key = weekStart.toISOString();
+      const existing = buckets.get(key);
+      if (existing) {
+        existing.amount += debt.amount;
+      } else {
+        buckets.set(key, { ts: weekStart.getTime(), amount: debt.amount });
+      }
+    }
+    return Array.from(buckets.values())
+      .sort((a, b) => a.ts - b.ts)
+      .map(({ ts, amount }) => {
+        const d = new Date(ts);
+        const label = `${MONTH_SHORT[d.getMonth()]} ${d.getDate()}`;
+        return { date: label, amount };
+      });
+  }, [debts]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -83,32 +104,38 @@ const DashboardHome = () => {
         {/* Line Chart */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 lg:col-span-2">
           <h2 className="text-lg font-bold text-slate-900 mb-6">Collections Over Time</h2>
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={collectionsOverTime} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={false} />
-              <Tooltip
-                contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", fontSize: 13 }}
-                formatter={(v: any) => [`₦${Number(v).toLocaleString()}`, "Amount"]}
-              />
-              <Line
-                type="monotone"
-                dataKey="amount"
-                stroke="#fe571b"
-                strokeWidth={2.5}
-                dot={{ r: 4, fill: "#fe571b", strokeWidth: 0 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {collectionsOverTime.length > 0 ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={collectionsOverTime} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={false} tickFormatter={(v) => `₦${Number(v).toLocaleString()}`} />
+                <Tooltip
+                  contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", fontSize: 13 }}
+                  formatter={(v: any) => [`₦${Number(v).toLocaleString()}`, "Amount"]}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="amount"
+                  stroke="#fe571b"
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: "#fe571b", strokeWidth: 0 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-65 items-center justify-center text-slate-400 text-sm">
+              No debt data to display yet.
+            </div>
+          )}
         </div>
 
         {/* Donut Chart */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
           <h2 className="text-lg font-bold text-slate-900 mb-6">Debt Status</h2>
-          <ResponsiveContainer width="100%" height={260}>
-            {debtStatusData.length > 0 ? (
+          {debtStatusData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={260}>
               <PieChart>
                 <Pie
                   data={debtStatusData}
@@ -130,12 +157,12 @@ const DashboardHome = () => {
                 />
                 <Tooltip formatter={(v: any) => [v, "Debts"]} />
               </PieChart>
-            ) : (
-                <div className="flex h-full items-center justify-center text-slate-400 text-sm">
-                  No debts to display yet.
-                </div>
-            )}
-          </ResponsiveContainer>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-65 items-center justify-center text-slate-400 text-sm">
+              No debts to display yet.
+            </div>
+          )}
         </div>
       </div>
     </div>
