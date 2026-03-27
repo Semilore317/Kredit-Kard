@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../store/store";
 import { addDebt } from "../../store/slices/debtsSlice";
+import { fetchCustomers } from "../../store/slices/customersSlice";
 
 interface NewDebtModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ const NewDebtModal = ({ isOpen, onClose }: NewDebtModalProps) => {
     
     setIsSubmitting(false);
     if (addDebt.fulfilled.match(action)) {
+      dispatch(fetchCustomers()); // refresh so Active Customers count updates immediately
       onClose();
       // Reset form
       setForm({ customerName: "", customerPhone: "", amount: "", description: "" });
