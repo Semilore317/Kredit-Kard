@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import auth, debts, customers, webhooks, demo
+from app.routers import auth, debts, customers, webhooks, analytics
 
 settings = get_settings()
 
@@ -17,27 +17,18 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:8000",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:8000",
-        "http://localhost:5173",
-        "http://localhost:5174",
-    ],  # Tighten to frontend URL before production
+    allow_origins=settings.cors_origins,
+    allow_origin_regex=settings.cors_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
 )
 
 app.include_router(auth.router)
 app.include_router(debts.router)
 app.include_router(customers.router)
 app.include_router(webhooks.router)
-
-# Only mount the demo router in non-production environments
-if settings.environment.lower() != "production":
-    app.include_router(demo.router)
+app.include_router(analytics.router)
 
 
 @app.get("/health", tags=["Health"])

@@ -13,30 +13,32 @@ from app.schemas.debt import DebtCreate, DebtOut, DebtListOut
 
 from app.config import get_settings
 from app.services.interswitch import create_virtual_account as _live_create_va
-from app.services.mock_payment import create_virtual_account as _mock_create_va
 from app.services import sms
+
+settings = get_settings()
 
 router = APIRouter(prefix="/debts", tags=["Debts"])
 
 
 def _create_virtual_account(payment_ref: str, amount: float, customer_name: str) -> dict:
-    """Dispatch to live or mock payment service based on PAYMENT_MODE env var."""
-    settings = get_settings()
-    if settings.payment_mode.lower() == "live":
-        return _live_create_va(payment_ref, amount, customer_name)
-    return _mock_create_va(payment_ref, amount, customer_name)
+    """Dispatch to live Interswitch API or return mock data."""
+    if settings.payment_mode == "mock":
+        # Simulate a successful Interswitch response for demos/testing
+        # Quickteller format: 10-digit virtual account number
+        import random
+        mock_va = "".join([str(random.randint(0, 9)) for _ in range(10)])
+        return {
+            "virtual_account_no": mock_va,
+            "ussd_string": f"*322*{round(amount)}*{mock_va}#",
+            "payment_ref": payment_ref,
+        }
+    
+    return _live_create_va(payment_ref, amount, customer_name)
 
 
 def _get_or_create_customer(
     db: Session, trader_id: int, name: str, phone: str
-) -> Customer:
-    # Normalize phone: convert 080... to 23480... or strip +
-    phone = phone.strip().replace(" ", "")
-    if phone.startswith("0"):
-        phone = "234" + phone[1:]
-    elif phone.startswith("+"):
-        phone = phone[1:]
-        
+) -> Customer:    
     customer = (
         db.query(Customer)
         .filter(Customer.trader_id == trader_id, Customer.phone == phone)
