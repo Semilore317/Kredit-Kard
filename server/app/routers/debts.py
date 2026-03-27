@@ -173,3 +173,41 @@ def cancel_debt(
     db.commit()
     db.refresh(debt)
     return _debt_to_out(debt)
+
+
+@router.post("/{debt_id}/test-payment", response_model=DebtOut)
+def simulate_payment(
+    debt_id: int,
+    db: Session = Depends(get_db),
+    trader: Trader = Depends(get_current_trader),
+):
+    """
+    Manually transition a debt to PAID. 
+    Only works if app is in 'mock' payment mode.
+    """
+    if settings.payment_mode != "mock":
+        raise HTTPException(
+            status_code=403, 
+            detail="Payment simulation is only available in mock mode."
+        )
+
+    debt = db.query(Debt).filter(Debt.id == debt_id, Debt.trader_id == trader.id).first()
+    if not debt:
+        raise HTTPException(status_code=404, detail="Debt not found")
+
+    if debt.status == DebtStatus.PAID:
+        return _debt_to_out(debt)
+
+    debt.status = DebtStatus.PAID
+    debt.paid_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(debt)
+
+    # Notify trader (matching real webhook behavior)
+    sms.send_payment_confirmation(
+        trader_phone=trader.phone,
+        customer_name=debt.customer.name,
+        amount=float(debt.amount),
+    )
+
+    return _debt_to_out(debt)
