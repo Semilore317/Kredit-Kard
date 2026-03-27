@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
 from app.config import get_settings
 from app.models.debt import Debt, DebtStatus
+from app.models.transaction import Transaction
 from app.services import sms
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
@@ -92,6 +93,18 @@ async def interswitch_webhook(
             paid_at=paid_at
         )
     )
+    db.commit()
+
+    # Record the transaction
+    txn = Transaction(
+        debt_id=debt_id,
+        trader_id=trader_id,
+        amount=amount_paid_naira,
+        payment_ref=payment_ref,
+        channel="TRANSFER",
+        status="SUCCESS"
+    )
+    db.add(txn)
     db.commit()
 
     if result.rowcount == 0:

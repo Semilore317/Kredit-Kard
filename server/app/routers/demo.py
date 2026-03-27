@@ -7,6 +7,7 @@ from app.config import get_settings
 from app.models.debt import Debt, DebtStatus
 from app.models.trader import Trader
 from app.models.customer import Customer
+from app.models.transaction import Transaction
 from app.schemas.debt import SimulationRequest
 from app.services import sms
 
@@ -60,6 +61,18 @@ def simulate_payment(
     debt.paid_at = paid_at
     db.commit()
     db.refresh(debt)
+
+    # Record the transaction
+    txn = Transaction(
+        debt_id=debt.id,
+        trader_id=debt.trader_id,
+        amount=amount_naira,
+        payment_ref=debt.payment_ref,
+        channel="TRANSFER",
+        status="SUCCESS"
+    )
+    db.add(txn)
+    db.commit()
 
     # Notify trader
     try:

@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import apiClient from "../../services/apiClient";
 import StatusBadge from "../../components/dashboard/StatusBadge";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store/store";
 
 type TxnStatus = "PENDING" | "SUCCESS" | "FAILED";
 type TxnChannel = "TRANSFER" | "USSD" | "QR" | "CARD";
@@ -10,23 +9,34 @@ const statusOptions: (TxnStatus | "ALL")[] = ["ALL", "PENDING", "SUCCESS", "FAIL
 const channelOptions: (TxnChannel | "ALL")[] = ["ALL", "TRANSFER", "USSD", "QR", "CARD"];
 
 const Transactions = () => {
+  const [txns, setTxns] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<TxnStatus | "ALL">("ALL");
   const [channelFilter, setChannelFilter] = useState<TxnChannel | "ALL">("ALL");
 
-  const { items: debts } = useSelector((state: RootState) => state.debts);
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await apiClient.get('/transactions');
+        setTxns(response.data);
+      } catch (err) {
+        console.error("Failed to fetch transactions:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, []);
 
-  // Create a pseudo-transaction list from the paid debts to replace mockData
-  const transactions = debts
-    .filter(debt => debt.status === 'PAID')
-    .map(debt => ({
-      id: debt.id,
-      reference: debt.payment_ref || `TXN-${debt.id}`,
-      customer: debt.customer.name,
-      amount: debt.amount,
-      channel: "TRANSFER" as TxnChannel,
-      status: "SUCCESS" as TxnStatus,
-      date: new Date(debt.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-    }));
+  const transactions = txns.map(t => ({
+    id: t.id,
+    reference: t.payment_ref,
+    customer: t.customer_name || "Unknown",
+    amount: t.amount,
+    channel: t.channel as TxnChannel,
+    status: t.status === "SUCCESS" ? "SUCCESS" : "FAILED" as TxnStatus,
+    date: new Date(t.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+  }));
 
   const filtered = transactions.filter((t) => {
     const matchStatus = statusFilter === "ALL" || t.status === statusFilter;

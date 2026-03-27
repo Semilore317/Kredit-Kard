@@ -2,3 +2,4 @@ from app.database import Base  # noqa: F401 — ensures Base is shared across mo
 from app.models.trader import Trader  # noqa: F401
 from app.models.customer import Customer  # noqa: F401
 from app.models.debt import Debt  # noqa: F401
+from app.models.transaction import Transaction  # noqa: F401
