@@ -56,6 +56,7 @@ class DebtListOut(BaseModel):
     amount: float
     total_paid: float
     status: str
+    payment_ref: str | None
     ussd_string: str | None
     created_at: datetime
     paid_at: datetime | None

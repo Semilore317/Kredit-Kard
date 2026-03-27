@@ -138,6 +138,7 @@ def list_debts(
             "amount": float(d.amount),
             "total_paid": float(d.total_paid or 0),
             "status": d.status.value,
+            "payment_ref": d.payment_ref,
             "ussd_string": d.ussd_string,
             "created_at": d.created_at,
             "paid_at": d.paid_at,
